@@ -22,7 +22,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { ParkingStatus } from '../../types';
 
 const mascotImg = require('../../assets/mascot_clean.png');
-const bgTexture = require('../../assets/mascot2.png');
+const bgTexture = require('../../assets/bg_sky.png');
 
 const NOTICE_CAT_LABEL: Record<string, string> = {
   operations: '운영',
@@ -73,6 +73,7 @@ export default function HomeScreen() {
         source={bgTexture}
         style={styles.headerBg}
         resizeMode="cover"
+        imageStyle={{ opacity: 0.55 }}
       >
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.topBar}>
