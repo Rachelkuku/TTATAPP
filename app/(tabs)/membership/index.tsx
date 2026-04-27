@@ -22,7 +22,7 @@ import { BenefitCategory, CouponStatus } from '../../../types';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 const mascotImg = require('../../../assets/mascot_clean.png');
-const bgTexture = require('../../../assets/bg_lavender.png');
+const bgTexture = require('../../../assets/bg_lavender2.png');
 
 type FilterTab = 'all' | BenefitCategory | 'coupon';
 
@@ -60,7 +60,7 @@ export default function MembershipScreen() {
         source={bgTexture}
         style={styles.headerBg}
         resizeMode="cover"
-        imageStyle={{ opacity: 0.55 }}
+        imageStyle={{ opacity: 1 }}
       >
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.topBar}>
