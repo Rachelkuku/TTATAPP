@@ -22,7 +22,7 @@ import { BenefitCategory, CouponStatus } from '../../../types';
 import { useAuthStore } from '../../../store/useAuthStore';
 
 const mascotImg = require('../../../assets/mascot_clean.png');
-const bgTexture = require('../../../assets/lavender.png');
+const bgTexture = require('../../../assets/mascot.png');
 
 type FilterTab = 'all' | BenefitCategory | 'coupon';
 

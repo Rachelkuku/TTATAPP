@@ -22,7 +22,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 import { ParkingStatus } from '../../types';
 
 const mascotImg = require('../../assets/mascot_clean.png');
-const bgTexture = require('../../assets/blue.png');
+const bgTexture = require('../../assets/mascot2.png');
 
 const NOTICE_CAT_LABEL: Record<string, string> = {
   operations: '운영',
