@@ -1,24 +1,24 @@
-// Material Design 3 Color System — WTC Brand Palette
-// Seed: Navy #1E3A8A  /  Gold #92702A
+// Material Design 3 Color System — WTC Brand Palette (Purple/Lavender)
+// Seed: Soft Purple #6C63D8
 
 export const MD3 = {
-  // Primary (WTC Navy)
-  primary: '#1E3A8A',
+  // Primary (Light Blue)
+  primary: '#4A9EC4',
   onPrimary: '#FFFFFF',
-  primaryContainer: '#D8E2FF',
-  onPrimaryContainer: '#001258',
+  primaryContainer: '#EBF7FF',
+  onPrimaryContainer: '#0C4661',
 
-  // Secondary (WTC Gold)
-  secondary: '#785900',
+  // Secondary (Sky Blue)
+  secondary: '#7CBAD9',
   onSecondary: '#FFFFFF',
-  secondaryContainer: '#FFEFC7',
-  onSecondaryContainer: '#271900',
+  secondaryContainer: '#EAF4FA',
+  onSecondaryContainer: '#1F536E',
 
-  // Tertiary (Teal accent)
-  tertiary: '#006874',
+  // Tertiary (Cool Blue)
+  tertiary: '#6EA4BD',
   onTertiary: '#FFFFFF',
-  tertiaryContainer: '#97F0FF',
-  onTertiaryContainer: '#001F24',
+  tertiaryContainer: '#E6F3FA',
+  onTertiaryContainer: '#18495F',
 
   // Error
   error: '#BA1A1A',
@@ -27,26 +27,26 @@ export const MD3 = {
   onErrorContainer: '#410002',
 
   // Surface & Background
-  background: '#FEF9FF',
-  onBackground: '#1B1B1F',
-  surface: '#FEF9FF',
-  onSurface: '#1B1B1F',
-  surfaceVariant: '#E3E1EC',
-  onSurfaceVariant: '#46464F',
+  background: '#F7FCFF',
+  onBackground: '#1C1B2E',
+  surface: '#FFFFFF',
+  onSurface: '#192C36',
+  surfaceVariant: '#E6EFF4',
+  onSurfaceVariant: '#435158',
 
   // Outline
-  outline: '#777680',
-  outlineVariant: '#C7C5D0',
+  outline: '#79758C',
+  outlineVariant: '#C9C4DC',
 
   // Inverse
-  inverseSurface: '#303034',
-  inverseOnSurface: '#F3EFF4',
-  inversePrimary: '#ADC6FF',
+  inverseSurface: '#2F363D',
+  inverseOnSurface: '#F1F5F9',
+  inversePrimary: '#A6D4FA',
 
-  // Tonal Surface Elevations (Surface + Primary tint)
-  surfaceTonal1: '#F2F0FA',  // elevation 1
-  surfaceTonal2: '#EAE8F5',  // elevation 2
-  surfaceTonal3: '#E3E0F0',  // elevation 3
+  // Tonal Surface Elevations
+  surfaceTonal1: '#F4FAFF',
+  surfaceTonal2: '#EBF4FA',
+  surfaceTonal3: '#E1EFF7',
 
   // Scrim / Shadow
   scrim: '#000000',
@@ -54,21 +54,20 @@ export const MD3 = {
   // Status
   success: '#1B6B32',
   successContainer: '#97F5AF',
-  warning: '#785900',
+  warning: '#7B5800',
   warningContainer: '#FFEFC7',
 
-  // Notice categories (kept for semantic use)
-  noticeOps: '#1E3A8A',
-  noticeConstruction: '#785900',
+  // Notice categories
+  noticeOps: '#4A9EC4',
+  noticeConstruction: '#7B5800',
   noticeUrgent: '#BA1A1A',
 
   // Parking
   parkingFree: '#1B6B32',
-  parkingBusy: '#785900',
+  parkingBusy: '#7B5800',
   parkingFull: '#BA1A1A',
 };
 
-// Shorthand alias for backward compat (maps to M3 roles)
 export const Colors = {
   primary: MD3.primary,
   secondary: MD3.tertiary,

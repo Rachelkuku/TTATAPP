@@ -12,15 +12,14 @@ interface TabIconProps {
   focused: boolean;
 }
 
-// M3 Navigation Bar Icon — with indicator pill
 function NavItem({ name, outlineName, label, focused }: TabIconProps) {
   return (
     <View style={navStyles.item}>
       <View style={[navStyles.indicator, focused && navStyles.indicatorActive]}>
         <Ionicons
           name={focused ? name : outlineName}
-          size={24}
-          color={focused ? MD3.onPrimaryContainer : MD3.onSurfaceVariant}
+          size={22}
+          color={focused ? MD3.primary : MD3.onSurfaceVariant}
         />
       </View>
       <Text style={[navStyles.label, focused && navStyles.labelActive]}>{label}</Text>
@@ -29,18 +28,18 @@ function NavItem({ name, outlineName, label, focused }: TabIconProps) {
 }
 
 const navStyles = StyleSheet.create({
-  item: { alignItems: 'center', justifyContent: 'center', paddingTop: 12 },
+  item: { alignItems: 'center', justifyContent: 'center', paddingTop: 8 },
   indicator: {
-    width: 64,
-    height: 32,
-    borderRadius: 16,
+    width: 56,
+    height: 30,
+    borderRadius: 15,
     alignItems: 'center',
     justifyContent: 'center',
-    marginBottom: 4,
+    marginBottom: 3,
   },
   indicatorActive: { backgroundColor: MD3.primaryContainer },
-  label: { fontSize: 12, fontWeight: '500', color: MD3.onSurfaceVariant, letterSpacing: 0.5 },
-  labelActive: { color: MD3.onSurface, fontWeight: '700' },
+  label: { fontSize: 11, fontWeight: '500', color: MD3.onSurfaceVariant },
+  labelActive: { color: MD3.primary, fontWeight: '700' },
 });
 
 export default function TabLayout() {
@@ -55,11 +54,11 @@ export default function TabLayout() {
           borderTopWidth: 1,
           height: Platform.OS === 'ios' ? 80 : 64,
           paddingBottom: Platform.OS === 'ios' ? 20 : 0,
-          elevation: 4,
-          shadowColor: MD3.scrim,
-          shadowOffset: { width: 0, height: -1 },
+          elevation: 8,
+          shadowColor: MD3.primary,
+          shadowOffset: { width: 0, height: -2 },
           shadowOpacity: 0.08,
-          shadowRadius: 8,
+          shadowRadius: 10,
         },
       }}
     >

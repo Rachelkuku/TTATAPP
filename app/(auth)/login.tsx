@@ -9,6 +9,7 @@ import {
   Platform,
   ScrollView,
   Alert,
+  ImageBackground,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -16,6 +17,8 @@ import { MD3 } from '../../constants/colors';
 import { M3TextField } from '../../components/common/M3TextField';
 import { M3Button } from '../../components/common/M3Button';
 import { useAuthStore } from '../../store/useAuthStore';
+
+const heroBg = require('../../assets/mascot2.png');
 
 export default function LoginScreen() {
   const [email, setEmail] = useState('');
@@ -42,19 +45,20 @@ export default function LoginScreen() {
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
         style={{ flex: 1 }}
       >
-        <ScrollView contentContainerStyle={styles.scroll} keyboardShouldPersistTaps="handled">
-          {/* Hero */}
-          <View style={styles.hero}>
-            <View style={styles.logoContainer}>
-              <View style={styles.logoBox}>
-                <Text style={styles.logoText}>WTC</Text>
-              </View>
+        <ScrollView
+          contentContainerStyle={styles.scroll}
+          keyboardShouldPersistTaps="handled"
+          showsVerticalScrollIndicator={false}
+        >
+          {/* Hero — 하늘+빌딩+두 캐릭터 배경 꽉 채우기 */}
+          <ImageBackground source={heroBg} style={styles.hero} resizeMode="cover">
+            <View style={styles.heroOverlay}>
+              <Text style={styles.heroTitle}>WTC ASEM·TRADE</Text>
+              <Text style={styles.heroSubtitle}>입주사 전용 멤버십 플랫폼</Text>
             </View>
-            <Text style={styles.heroTitle}>WTC Membership</Text>
-            <Text style={styles.heroSubtitle}>WTC SEOUL 입주사 전용 플랫폼</Text>
-          </View>
+          </ImageBackground>
 
-          {/* M3 Card Form */}
+          {/* 로그인 카드 */}
           <View style={styles.card}>
             <Text style={styles.cardTitle}>로그인</Text>
 
@@ -73,7 +77,6 @@ export default function LoginScreen() {
                 value={password}
                 onChangeText={setPassword}
                 secureTextEntry={!showPassword}
-                style={{ flex: 1 }}
               />
               <TouchableOpacity
                 style={styles.eyeBtn}
@@ -106,7 +109,7 @@ export default function LoginScreen() {
             </TouchableOpacity>
           </View>
 
-          {/* Register */}
+          {/* 회원가입 */}
           <View style={styles.registerRow}>
             <Text style={styles.registerHint}>WTC 입주사 직원이신가요?</Text>
             <TouchableOpacity onPress={() => router.push('/(auth)/register')}>
@@ -120,49 +123,59 @@ export default function LoginScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: MD3.background },
-  scroll: { flexGrow: 1, paddingHorizontal: 24, paddingVertical: 32 },
-  hero: { alignItems: 'center', marginBottom: 32 },
-  logoContainer: { marginBottom: 16 },
-  logoBox: {
-    width: 80,
-    height: 80,
-    borderRadius: 24,
-    backgroundColor: MD3.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-    elevation: 4,
-    shadowColor: MD3.scrim,
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.2,
-    shadowRadius: 8,
+  safe: { flex: 1, backgroundColor: '#C8DEF5' },
+  scroll: { flexGrow: 1, paddingBottom: 40 },
+
+  hero: {
+    width: '100%',
+    height: 280,
+    marginBottom: 0,
   },
-  logoText: {
+  heroOverlay: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 28,
+    paddingBottom: 24,
+    backgroundColor: 'rgba(30,60,100,0.15)',
+  },
+  heroTitle: {
     fontSize: 26,
-    fontWeight: '900',
-    color: MD3.onPrimary,
-    letterSpacing: 3,
+    fontWeight: '800',
+    color: '#FFFFFF',
+    letterSpacing: 0.5,
+    textShadowColor: 'rgba(0,0,0,0.25)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 4,
   },
-  heroTitle: { fontSize: 28, fontWeight: '400', color: MD3.onBackground, letterSpacing: 0.5 },
-  heroSubtitle: { fontSize: 14, color: MD3.onSurfaceVariant, marginTop: 6 },
+  heroSubtitle: {
+    fontSize: 14,
+    color: 'rgba(255,255,255,0.9)',
+    marginTop: 4,
+    textShadowColor: 'rgba(0,0,0,0.2)',
+    textShadowOffset: { width: 0, height: 1 },
+    textShadowRadius: 3,
+  },
+
   card: {
     backgroundColor: MD3.surface,
     borderRadius: 28,
     padding: 24,
-    elevation: 1,
-    shadowColor: MD3.scrim,
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 6,
+    elevation: 3,
+    shadowColor: MD3.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.12,
+    shadowRadius: 12,
     marginBottom: 24,
+    marginHorizontal: 24,
+    marginTop: 24,
   },
   cardTitle: {
-    fontSize: 22,
-    fontWeight: '500',
+    fontSize: 20,
+    fontWeight: '600',
     color: MD3.onSurface,
-    marginBottom: 24,
+    marginBottom: 20,
   },
-  passwordRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
+  passwordRow: { position: 'relative' },
   eyeBtn: {
     position: 'absolute',
     right: 12,
@@ -171,7 +184,8 @@ const styles = StyleSheet.create({
   },
   forgotRow: { alignItems: 'center', marginTop: 16 },
   forgotText: { fontSize: 14, color: MD3.primary, fontWeight: '500' },
-  registerRow: { flexDirection: 'row', justifyContent: 'center', gap: 6 },
+
+  registerRow: { flexDirection: 'row', justifyContent: 'center', gap: 6, paddingHorizontal: 24 },
   registerHint: { fontSize: 14, color: MD3.onSurfaceVariant },
   registerLink: { fontSize: 14, color: MD3.primary, fontWeight: '700' },
 });

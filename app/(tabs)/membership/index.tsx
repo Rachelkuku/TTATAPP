@@ -7,15 +7,22 @@ import {
   StyleSheet,
   SafeAreaView,
   Alert,
+  Image,
+  ImageBackground,
+  Platform,
+  StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { router } from 'expo-router';
 import { MD3 } from '../../../constants/colors';
 import { M3Card } from '../../../components/common/M3Card';
 import { M3Chip } from '../../../components/common/M3Chip';
-import { M3Button } from '../../../components/common/M3Button';
-import { mockBenefits, mockCoupons } from '../../../utils/mockData';
+import { mockBenefits } from '../../../utils/mockData';
 import { BenefitCategory, CouponStatus } from '../../../types';
 import { useAuthStore } from '../../../store/useAuthStore';
+
+const mascotImg = require('../../../assets/mascot_clean.png');
+const bgTexture = require('../../../assets/lavender.png');
 
 type FilterTab = 'all' | BenefitCategory | 'coupon';
 
@@ -28,223 +35,222 @@ const TABS: { key: FilterTab; label: string; icon: React.ComponentProps<typeof I
   { key: 'coupon', label: '쿠폰함', icon: 'ticket-outline' },
 ];
 
-const COUPON_STATUS: Record<CouponStatus, { label: string; color: string; bg: string }> = {
-  available: { label: '사용 가능', color: MD3.success, bg: MD3.tertiaryContainer },
-  used: { label: '사용 완료', color: MD3.onSurfaceVariant, bg: MD3.surfaceVariant },
-  expired: { label: '기간 만료', color: MD3.error, bg: MD3.errorContainer },
-};
+const PREMIUM_BENEFITS = [
+  { icon: 'cafe', title: '전용 라운지 이용', sub: '프리미엄 라운지 무료 이용' },
+  { icon: 'car', title: '주차 할인', sub: '주차 요금 20% 할인' },
+  { icon: 'gift', title: '제휴사 혜택', sub: '다양한 제휴사 할인 혜택 제공' },
+  { icon: 'ticket', title: '이벤트 초대', sub: 'VIP 전용 이벤트 초대' },
+];
 
 export default function MembershipScreen() {
   const [activeTab, setActiveTab] = useState<FilterTab>('all');
+  const [selectedPlan, setSelectedPlan] = useState('vip');
   const { isLoggedIn } = useAuthStore();
 
   const filteredBenefits = activeTab === 'all' || activeTab === 'coupon'
     ? mockBenefits
     : mockBenefits.filter((b) => b.category === activeTab);
 
-  const handleCoupon = () => {
-    if (!isLoggedIn) {
-      Alert.alert('로그인 필요', '쿠폰을 받으려면 로그인이 필요합니다.');
-      return;
-    }
-    Alert.alert('쿠폰 받기 완료', '쿠폰함에 저장되었습니다.');
-  };
-
   return (
-    <SafeAreaView style={styles.safe}>
-      {/* Hero Top Bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.headline}>WTC 멤버십</Text>
-        <Text style={styles.subHeadline}>입주사 전용 혜택</Text>
-      </View>
+    <View style={styles.container}>
+      <StatusBar barStyle="dark-content" />
 
-      {/* Filter Chips */}
-      <View style={styles.chipBar}>
-        <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
-          {TABS.map((tab) => (
-            <M3Chip
-              key={tab.key}
-              label={tab.label}
-              selected={activeTab === tab.key}
-              onPress={() => setActiveTab(tab.key)}
-              icon={
-                activeTab === tab.key ? (
-                  <Ionicons name={tab.icon} size={14} color={MD3.onPrimaryContainer} />
-                ) : undefined
-              }
-            />
-          ))}
-        </ScrollView>
-      </View>
+      {/* 헤더 — 라벤더 빌딩 배경 + 마스코트 오른쪽 */}
+      <ImageBackground
+        source={bgTexture}
+        style={styles.headerBg}
+        resizeMode="cover"
+      >
+        <SafeAreaView style={{ flex: 1 }}>
+          <View style={styles.topBar}>
+            <View style={{ width: 40 }} />
+            <Text style={styles.appBarHeadline}>멤버십</Text>
+            <View style={{ width: 40 }} />
+          </View>
+          <View style={styles.headerContent}>
+            <View style={styles.greetingBox}>
+              <Text style={styles.greetingTitle}>ASEM·TRADE</Text>
+              <Text style={styles.greetingSubtitle}>입주사 전용{'\n'}프리미엄 혜택</Text>
+            </View>
+            <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
 
-      <ScrollView style={{ flex: 1 }} showsVerticalScrollIndicator={false}>
-        {activeTab === 'coupon' ? (
-          /* ── 쿠폰함 ── */
-          <View style={styles.section}>
-            {!isLoggedIn ? (
-              <M3Card variant="filled" style={styles.emptyCard}>
-                <Ionicons name="ticket-outline" size={48} color={MD3.onSurfaceVariant} />
-                <Text style={styles.emptyTitle}>로그인 후 이용하세요</Text>
-                <Text style={styles.emptySub}>입주사 전용 쿠폰함</Text>
-              </M3Card>
-            ) : mockCoupons.length === 0 ? (
-              <M3Card variant="filled" style={styles.emptyCard}>
-                <Ionicons name="ticket-outline" size={48} color={MD3.onSurfaceVariant} />
-                <Text style={styles.emptyTitle}>보유한 쿠폰이 없습니다</Text>
-              </M3Card>
-            ) : (
-              mockCoupons.map((coupon) => {
-                const status = COUPON_STATUS[coupon.status];
-                return (
-                  <M3Card key={coupon.id} variant="outlined" style={styles.couponCard}>
-                    <View style={styles.couponDeco} />
-                    <View style={styles.couponBody}>
-                      <View style={styles.couponTop}>
-                        <View>
-                          <Text style={styles.couponBrand}>{coupon.brandName}</Text>
-                          <Text style={styles.couponTitle}>{coupon.title}</Text>
-                        </View>
-                        <View style={[styles.statusChip, { backgroundColor: status.bg }]}>
-                          <Text style={[styles.statusText, { color: status.color }]}>{status.label}</Text>
-                        </View>
-                      </View>
-                      <View style={styles.couponDivider} />
-                      <View style={styles.couponBottom}>
-                        <Text style={styles.couponExpiry}>유효기간 ~{coupon.endDate}</Text>
-                        {coupon.status === 'available' && (
-                          <M3Button
-                            label="사용하기"
-                            variant="tonal"
-                            style={styles.useBtn}
-                            onPress={() => Alert.alert('쿠폰 사용', 'QR 코드를 매장에 제시해주세요.')}
-                          />
-                        )}
-                      </View>
+      {/* Main Content Area */}
+      <View style={styles.contentWrapper}>
+        <View style={styles.whitePanel}>
+          <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+
+            {/* Crown & Title */}
+            <View style={styles.crownBox}>
+              <View style={styles.crownIconCircle}>
+                <Ionicons name="sparkles" size={24} color="#FFFFFF" />
+              </View>
+              <Text style={styles.premiumTitle}>ASEM TRADE 프리미엄 멤버십</Text>
+              <Text style={styles.premiumSubtitle}>코엑스의 다양한 혜택을 누려보세요</Text>
+            </View>
+
+            {/* Premium Benefits List */}
+            <View style={styles.premiumBenefitList}>
+              {PREMIUM_BENEFITS.map((b, idx) => (
+                <TouchableOpacity key={idx} style={styles.premiumBenefitRow}>
+                  <View style={styles.benefitIconBg}>
+                    <Ionicons name={b.icon as any} size={20} color="#888" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.pbTitle}>{b.title}</Text>
+                    <Text style={styles.pbSub}>{b.sub}</Text>
+                  </View>
+                  <Ionicons name="chevron-forward" size={16} color="#BBB" />
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            {/* Plans */}
+            <View style={styles.planContainer}>
+              {[
+                { key: 'premium', label: 'ASEM TRADE 프리미엄 멤버십', sub: '모든 혜택을 합리적인 가격에 무제한으로 누리세요', price: '월 2,990원', icon: 'star' },
+              ].map((plan) => (
+                <TouchableOpacity
+                  key={plan.key}
+                  style={[styles.planCard, selectedPlan === plan.key && styles.planCardActive]}
+                  onPress={() => setSelectedPlan(plan.key)}
+                >
+                  <Ionicons name={plan.icon as any} size={20} color={selectedPlan === plan.key ? MD3.primary : '#AAA'} />
+                  <View style={{ flex: 1 }}>
+                    <Text style={[styles.planTitle, selectedPlan === plan.key && styles.planTitleActive]}>{plan.label}</Text>
+                    <Text style={[styles.planSub, selectedPlan === plan.key && styles.planSubActive]}>{plan.sub}</Text>
+                  </View>
+                  <Text style={[styles.planPrice, selectedPlan === plan.key && styles.planPriceActive]}>{plan.price}</Text>
+                  <View style={[styles.radioIcon, selectedPlan === plan.key && styles.radioIconActive]}>
+                    {selectedPlan === plan.key && <Ionicons name="checkmark" size={12} color="#FFF" />}
+                  </View>
+                </TouchableOpacity>
+              ))}
+            </View>
+
+            <TouchableOpacity
+              style={styles.joinBtn}
+              onPress={() => Alert.alert('멤버십 가입', '멤버십 가입을 진행합니다.')}
+            >
+              <Text style={styles.joinBtnText}>멤버십 가입하기</Text>
+            </TouchableOpacity>
+
+            {/* Filter & List */}
+            <View style={styles.chipBar}>
+              <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+                {TABS.map((tab) => (
+                  <M3Chip
+                    key={tab.key}
+                    label={tab.label}
+                    selected={activeTab === tab.key}
+                    onPress={() => setActiveTab(tab.key)}
+                    icon={activeTab === tab.key ? <Ionicons name={tab.icon} size={14} color={MD3.onPrimaryContainer} /> : undefined}
+                  />
+                ))}
+              </ScrollView>
+            </View>
+
+            <View style={{ padding: 16 }}>
+              <Text style={{ fontSize: 13, color: '#888', marginBottom: 12 }}>{filteredBenefits.length}개의 기타 혜택</Text>
+              {activeTab === 'coupon' ? (
+                <Text style={{ textAlign: 'center', color: '#888', padding: 20 }}>쿠폰 내역</Text>
+              ) : (
+                filteredBenefits.slice(0, 3).map((benefit) => (
+                  <M3Card key={benefit.id} variant="elevated" style={{ marginBottom: 12 }}>
+                    <View style={{ padding: 14 }}>
+                      <Text style={{ fontSize: 14, fontWeight: '600' }}>{benefit.title}</Text>
+                      <Text style={{ fontSize: 12, color: '#888', marginTop: 4 }}>{benefit.brandName} · {benefit.discountText}</Text>
                     </View>
                   </M3Card>
-                );
-              })
-            )}
-          </View>
-        ) : (
-          /* ── 혜택 목록 ── */
-          <View style={styles.section}>
-            <Text style={styles.countLabel}>{filteredBenefits.length}개의 혜택</Text>
-            {filteredBenefits.map((benefit) => (
-              <M3Card key={benefit.id} variant="elevated" style={styles.benefitCard}>
-                {/* Image area */}
-                <View style={styles.benefitImg}>
-                  <Ionicons name="gift" size={40} color={MD3.primary} />
-                </View>
+                ))
+              )}
+            </View>
 
-                <View style={styles.benefitBody}>
-                  <View style={styles.benefitTop}>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.benefitBrand}>{benefit.brandName}</Text>
-                      <Text style={styles.benefitTitle}>{benefit.title}</Text>
-                    </View>
-                    <View style={styles.discountBadge}>
-                      <Text style={styles.discountText}>{benefit.discountText}</Text>
-                    </View>
-                  </View>
-
-                  <View style={styles.benefitMeta}>
-                    <Ionicons name="location-outline" size={13} color={MD3.onSurfaceVariant} />
-                    <Text style={styles.metaText} numberOfLines={1}>{benefit.location}</Text>
-                  </View>
-                  <View style={styles.benefitMeta}>
-                    <Ionicons name="calendar-outline" size={13} color={MD3.onSurfaceVariant} />
-                    <Text style={styles.metaText}>~ {benefit.endDate}</Text>
-                  </View>
-
-                  <View style={styles.benefitActions}>
-                    <M3Button
-                      label="상세보기"
-                      variant="text"
-                      style={styles.actionBtn}
-                      onPress={() =>
-                        Alert.alert(benefit.title, `사용방법: ${benefit.usageMethod}\n\n유의사항: ${benefit.notes}`)
-                      }
-                    />
-                    <M3Button
-                      label="쿠폰 받기"
-                      variant="tonal"
-                      style={styles.actionBtn}
-                      icon={<Ionicons name="download-outline" size={14} color={MD3.onPrimaryContainer} />}
-                      onPress={handleCoupon}
-                    />
-                  </View>
-                </View>
-              </M3Card>
-            ))}
-          </View>
-        )}
-        <View style={{ height: 32 }} />
-      </ScrollView>
-    </SafeAreaView>
+          </ScrollView>
+        </View>
+      </View>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: MD3.background },
-  topBar: { backgroundColor: MD3.surface, paddingHorizontal: 16, paddingTop: 16, paddingBottom: 12 },
-  headline: { fontSize: 28, fontWeight: '400', color: MD3.onSurface },
-  subHeadline: { fontSize: 13, color: MD3.onSurfaceVariant, marginTop: 2 },
-  chipBar: {
-    backgroundColor: MD3.surface,
-    borderBottomWidth: 1,
-    borderBottomColor: MD3.outlineVariant,
+  container: { flex: 1, backgroundColor: '#DDD8F5' },
+  headerBg: {
+    height: Platform.OS === 'ios' ? 250 : 230,
+    width: '100%',
+    backgroundColor: '#DDD8F5',
   },
-  chipRow: { paddingHorizontal: 16, paddingVertical: 10, gap: 8 },
-  section: { padding: 16 },
-  countLabel: { fontSize: 13, color: MD3.onSurfaceVariant, marginBottom: 12 },
-
-  // Empty state
-  emptyCard: { alignItems: 'center', padding: 48, gap: 8 },
-  emptyTitle: { fontSize: 16, fontWeight: '500', color: MD3.onSurfaceVariant },
-  emptySub: { fontSize: 13, color: MD3.outline },
-
-  // Coupon card
-  couponCard: { flexDirection: 'row', marginBottom: 12, overflow: 'hidden' },
-  couponDeco: { width: 8, backgroundColor: MD3.primary },
-  couponBody: { flex: 1, padding: 16 },
-  couponTop: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'flex-start', gap: 8 },
-  couponBrand: { fontSize: 12, color: MD3.onSurfaceVariant, marginBottom: 3 },
-  couponTitle: { fontSize: 15, fontWeight: '600', color: MD3.onSurface },
-  statusChip: { paddingHorizontal: 10, paddingVertical: 4, borderRadius: 12 },
-  statusText: { fontSize: 12, fontWeight: '600' },
-  couponDivider: {
-    height: 1,
-    backgroundColor: MD3.outlineVariant,
-    marginVertical: 12,
-    borderStyle: 'dashed',
-  },
-  couponBottom: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' },
-  couponExpiry: { fontSize: 12, color: MD3.onSurfaceVariant },
-  useBtn: { paddingVertical: 6, paddingHorizontal: 16 },
-
-  // Benefit card
-  benefitCard: { marginBottom: 12 },
-  benefitImg: {
-    height: 100,
-    backgroundColor: MD3.primaryContainer,
+  topBar: {
+    flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? 16 : 0,
+    height: 56,
   },
-  benefitBody: { padding: 16 },
-  benefitTop: { flexDirection: 'row', gap: 10, marginBottom: 10, alignItems: 'flex-start' },
-  benefitBrand: { fontSize: 12, color: MD3.onSurfaceVariant, marginBottom: 3 },
-  benefitTitle: { fontSize: 15, fontWeight: '600', color: MD3.onSurface },
-  discountBadge: {
-    backgroundColor: MD3.primaryContainer,
-    paddingHorizontal: 10,
-    paddingVertical: 4,
-    borderRadius: 8,
-    alignSelf: 'flex-start',
+  appBarHeadline: { fontSize: 20, fontWeight: '700', color: '#FFFFFF' },
+  headerContent: { flex: 1, flexDirection: 'row', alignItems: 'flex-end', paddingLeft: 24 },
+  greetingBox: { flex: 1, paddingBottom: 16 },
+  greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
+  greetingSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
+  headerCharImg: { width: 322, height: 255, position: 'absolute', right: -10, bottom: -20 },
+
+  contentWrapper: { flex: 1, marginTop: -32 },
+  whitePanel: {
+    flex: 1, backgroundColor: '#FFFFFF',
+    borderTopLeftRadius: 32, borderTopRightRadius: 32,
+    overflow: 'hidden', paddingTop: 32,
   },
-  discountText: { fontSize: 12, fontWeight: '700', color: MD3.onPrimaryContainer },
-  benefitMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 4 },
-  metaText: { fontSize: 13, color: MD3.onSurfaceVariant, flex: 1 },
-  benefitActions: { flexDirection: 'row', gap: 8, marginTop: 12, justifyContent: 'flex-end' },
-  actionBtn: { paddingHorizontal: 16 },
+  scroll: { flex: 1 },
+
+  crownBox: { alignItems: 'center', marginBottom: 24 },
+  crownIconCircle: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: '#7CBAD9',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 12,
+  },
+  premiumTitle: { fontSize: 20, fontWeight: '700', color: MD3.onSurface, marginBottom: 6 },
+  premiumSubtitle: { fontSize: 13, color: '#888' },
+
+  premiumBenefitList: { paddingHorizontal: 24, marginBottom: 24, gap: 16 },
+  premiumBenefitRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
+  benefitIconBg: {
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center',
+  },
+  pbTitle: { fontSize: 15, fontWeight: '600', color: MD3.onSurface, marginBottom: 2 },
+  pbSub: { fontSize: 12, color: '#888' },
+
+  planContainer: { paddingHorizontal: 20, marginBottom: 24, gap: 12 },
+  planCard: {
+    flexDirection: 'row', alignItems: 'center',
+    padding: 16, borderRadius: 16,
+    backgroundColor: '#F9FAFB',
+    borderWidth: 1, borderColor: 'transparent', gap: 12,
+  },
+  planCardActive: { backgroundColor: '#F0F4FF', borderColor: '#D0DFFF' },
+  planTitle: { fontSize: 15, fontWeight: '600', color: MD3.onSurface, marginBottom: 2 },
+  planTitleActive: { color: MD3.primary },
+  planSub: { fontSize: 12, color: '#888' },
+  planSubActive: { color: '#6EA4BD' },
+  planPrice: { fontSize: 14, fontWeight: '700', color: '#666' },
+  planPriceActive: { color: MD3.primary },
+  radioIcon: {
+    width: 20, height: 20, borderRadius: 10,
+    borderWidth: 2, borderColor: '#CCC',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  radioIconActive: { borderColor: MD3.primary, backgroundColor: MD3.primary },
+
+  joinBtn: {
+    backgroundColor: '#4A9EC4', borderRadius: 16,
+    paddingVertical: 18, alignItems: 'center',
+    marginHorizontal: 20, marginBottom: 32,
+  },
+  joinBtnText: { fontSize: 16, fontWeight: '700', color: '#FFF' },
+
+  chipBar: { borderTopWidth: 1, borderTopColor: '#EEE' },
+  chipRow: { paddingHorizontal: 16, paddingVertical: 12, gap: 8 },
 });

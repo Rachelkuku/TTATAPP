@@ -8,6 +8,7 @@ import {
   SafeAreaView,
   Alert,
   Switch,
+  Image,
 } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -15,6 +16,8 @@ import { MD3 } from '../../../constants/colors';
 import { M3Card } from '../../../components/common/M3Card';
 import { M3Button } from '../../../components/common/M3Button';
 import { useAuthStore } from '../../../store/useAuthStore';
+
+const mascotImg = require('../../../assets/mascot_clean.png');
 
 const NOTIF_SETTINGS = [
   { key: 'ops', label: '운영공지' },
@@ -65,8 +68,18 @@ export default function MyScreen() {
   if (!isLoggedIn) {
     return (
       <SafeAreaView style={styles.safe}>
-        <View style={styles.topBar}>
-          <Text style={styles.headline}>마이페이지</Text>
+        <View style={styles.header}>
+          <View style={styles.headerInner}>
+            <View style={styles.headerLeft}>
+              <Text style={styles.headline}>마이페이지</Text>
+            </View>
+            <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
+          </View>
+          <View style={styles.headerDeco}>
+            {[0, 1, 2].map(i => (
+              <View key={i} style={[styles.decoCircle, { width: 60 + i * 30, height: 60 + i * 30, opacity: 0.1 - i * 0.02, right: -20 + i * 10, top: -20 + i * 10 }]} />
+            ))}
+          </View>
         </View>
         <View style={styles.guestBox}>
           <View style={styles.guestAvatar}>
@@ -88,50 +101,66 @@ export default function MyScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      <View style={styles.topBar}>
-        <Text style={styles.headline}>마이페이지</Text>
-        <TouchableOpacity
-          style={styles.settingsBtn}
-          onPress={() => Alert.alert('설정', '설정 화면 예정')}
-        >
-          <Ionicons name="settings-outline" size={24} color={MD3.onSurface} />
-        </TouchableOpacity>
+      {/* 헤더 — 딥 인디고 + 마스코트 오른쪽 */}
+      <View style={styles.header}>
+        <View style={styles.headerInner}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerIconBox}>
+              <Ionicons name="person" size={28} color={MD3.onSurface} />
+            </View>
+            <View style={{ flex: 1 }}>
+              <Text style={styles.headline}>마이페이지</Text>
+              <Text style={styles.headerSubtext}>{user?.companyName ?? 'WTC 입주사'}</Text>
+            </View>
+            <TouchableOpacity
+              style={styles.settingsBtn}
+              onPress={() => Alert.alert('설정', '설정 화면 예정')}
+            >
+              <Ionicons name="settings-outline" size={20} color={MD3.onSurface} />
+            </TouchableOpacity>
+          </View>
+          <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
+        </View>
+        <View style={styles.headerDeco}>
+          {[0, 1, 2].map(i => (
+            <View key={i} style={[styles.decoCircle, { width: 60 + i * 30, height: 60 + i * 30, opacity: 0.1 - i * 0.02, right: -20 + i * 10, top: -20 + i * 10 }]} />
+          ))}
+        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Profile Card */}
-        <M3Card variant="filled" style={[styles.profileCard, { backgroundColor: MD3.primaryContainer }]}>
-          <View style={styles.profileInner}>
-            <View style={styles.avatarBox}>
-              <Text style={styles.avatarText}>{user?.name?.[0] ?? 'U'}</Text>
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.profileName}>{user?.name}</Text>
-              <Text style={styles.profileCompany}>{user?.companyName}</Text>
-              <View style={styles.verifiedRow}>
-                <Ionicons
-                  name={user?.isTenantVerified ? 'checkmark-circle' : 'time-outline'}
-                  size={14}
-                  color={user?.isTenantVerified ? MD3.success : MD3.warning}
-                />
-                <Text style={[
-                  styles.verifiedText,
-                  { color: user?.isTenantVerified ? MD3.success : MD3.warning },
-                ]}>
-                  {user?.isTenantVerified ? '입주사 인증 완료' : '인증 대기중'}
-                </Text>
+        {/* 프로필 카드 */}
+        <View style={styles.section}>
+          <M3Card variant="outlined" style={styles.profileCard}>
+            <View style={styles.profileInner}>
+              <View style={styles.avatarBox}>
+                <Text style={styles.avatarText}>{user?.name?.[0] ?? 'U'}</Text>
               </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.profileName}>{user?.name}</Text>
+                <Text style={styles.profileCompany}>{user?.companyName}</Text>
+                <View style={styles.verifiedRow}>
+                  <Ionicons
+                    name={user?.isTenantVerified ? 'checkmark-circle' : 'time-outline'}
+                    size={14}
+                    color={user?.isTenantVerified ? MD3.success : MD3.warning}
+                  />
+                  <Text style={[styles.verifiedText, { color: user?.isTenantVerified ? MD3.success : MD3.warning }]}>
+                    {user?.isTenantVerified ? '입주사 인증 완료' : '인증 대기중'}
+                  </Text>
+                </View>
+              </View>
+              <TouchableOpacity
+                style={styles.editBtn}
+                onPress={() => Alert.alert('회원정보 수정', '기존 홈페이지 연동 예정')}
+              >
+                <Ionicons name="create-outline" size={18} color={MD3.primary} />
+              </TouchableOpacity>
             </View>
-            <TouchableOpacity
-              style={styles.editBtn}
-              onPress={() => Alert.alert('회원정보 수정', '기존 홈페이지 연동 예정')}
-            >
-              <Ionicons name="create-outline" size={20} color={MD3.onPrimaryContainer} />
-            </TouchableOpacity>
-          </View>
-        </M3Card>
+          </M3Card>
+        </View>
 
-        {/* Stats */}
+        {/* 통계 */}
         <View style={styles.statsRow}>
           {[
             { label: '신청 내역', val: '3건', icon: 'document-text-outline' as const },
@@ -139,14 +168,16 @@ export default function MyScreen() {
             { label: '내 게시글', val: '2개', icon: 'create-outline' as const },
           ].map((s) => (
             <M3Card key={s.label} variant="outlined" style={styles.statCard}>
-              <Ionicons name={s.icon} size={22} color={MD3.primary} />
+              <View style={styles.statIconBox}>
+                <Ionicons name={s.icon} size={20} color={MD3.primary} />
+              </View>
               <Text style={styles.statVal}>{s.val}</Text>
               <Text style={styles.statLabel}>{s.label}</Text>
             </M3Card>
           ))}
         </View>
 
-        {/* My Activity */}
+        {/* 내 활동 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>내 활동</Text>
           <M3Card variant="outlined" style={{ overflow: 'hidden' }}>
@@ -157,7 +188,7 @@ export default function MyScreen() {
                 onPress={() => Alert.alert(item.label, '기존 홈페이지 연동 예정')}
               >
                 <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon} size={20} color={MD3.primary} />
+                  <Ionicons name={item.icon} size={18} color={MD3.primary} />
                 </View>
                 <Text style={styles.menuLabel}>{item.label}</Text>
                 {item.badge && (
@@ -165,13 +196,13 @@ export default function MyScreen() {
                     <Text style={styles.badgeText}>{item.badge}</Text>
                   </View>
                 )}
-                <Ionicons name="chevron-forward" size={16} color={MD3.onSurfaceVariant} />
+                <Ionicons name="chevron-forward" size={16} color={MD3.outline} />
               </TouchableOpacity>
             ))}
           </M3Card>
         </View>
 
-        {/* Account */}
+        {/* 계정 관리 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>계정 관리</Text>
           <M3Card variant="outlined" style={{ overflow: 'hidden' }}>
@@ -182,16 +213,16 @@ export default function MyScreen() {
                 onPress={() => Alert.alert(item.label, '기존 홈페이지 연동 예정')}
               >
                 <View style={styles.menuIcon}>
-                  <Ionicons name={item.icon} size={20} color={MD3.primary} />
+                  <Ionicons name={item.icon} size={18} color={MD3.primary} />
                 </View>
                 <Text style={styles.menuLabel}>{item.label}</Text>
-                <Ionicons name="chevron-forward" size={16} color={MD3.onSurfaceVariant} />
+                <Ionicons name="chevron-forward" size={16} color={MD3.outline} />
               </TouchableOpacity>
             ))}
           </M3Card>
         </View>
 
-        {/* Notification Settings */}
+        {/* 알림 설정 */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>알림 설정</Text>
           <M3Card variant="outlined" style={{ overflow: 'hidden' }}>
@@ -201,15 +232,15 @@ export default function MyScreen() {
                 <Switch
                   value={notifications[item.key]}
                   onValueChange={() => toggleNotif(item.key)}
-                  trackColor={{ false: MD3.outlineVariant, true: MD3.primary }}
-                  thumbColor={MD3.onPrimary}
+                  trackColor={{ false: MD3.outlineVariant, true: MD3.primaryContainer }}
+                  thumbColor={notifications[item.key] ? MD3.primary : MD3.outline}
                 />
               </View>
             ))}
           </M3Card>
         </View>
 
-        {/* Logout */}
+        {/* 로그아웃 */}
         <View style={styles.section}>
           <M3Button
             label="로그아웃"
@@ -228,70 +259,113 @@ export default function MyScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: MD3.background },
-  topBar: {
+  safe: { flex: 1, backgroundColor: '#E4ECFB' },
+
+  header: {
+    backgroundColor: '#E4ECFB',
+    paddingTop: 52,
+    paddingHorizontal: 24,
+    paddingBottom: 0,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#E4ECFB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.35,
+    shadowRadius: 12,
+  },
+  headerInner: {
+    flexDirection: 'row',
+    alignItems: 'flex-end',
+    zIndex: 1,
+  },
+  headerLeft: {
+    flex: 1,
     flexDirection: 'row',
     alignItems: 'center',
-    justifyContent: 'space-between',
-    backgroundColor: MD3.surface,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 12,
+    gap: 16,
+    paddingBottom: 20,
   },
-  headline: { fontSize: 28, fontWeight: '400', color: MD3.onSurface },
-  settingsBtn: { width: 48, height: 48, alignItems: 'center', justifyContent: 'center' },
+  headerIconBox: {
+    width: 52, height: 52, borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headline: { fontSize: 26, fontWeight: '800', color: MD3.onSurface },
+  headerSubtext: { fontSize: 13, color: MD3.onSurfaceVariant, marginTop: 2 },
+  settingsBtn: {
+    width: 38, height: 38, borderRadius: 19,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headerCharImg: {
+    width: 130,
+    height: 110,
+  },
+  headerDeco: { position: 'absolute', top: 0, right: 0, bottom: 0 },
+  decoCircle: { position: 'absolute', borderRadius: 999, backgroundColor: '#FFFFFF' },
+
   guestBox: { flex: 1, alignItems: 'center', justifyContent: 'center', gap: 12, padding: 40 },
   guestAvatar: {
-    width: 96,
-    height: 96,
-    borderRadius: 48,
-    backgroundColor: MD3.surfaceVariant,
+    width: 88,
+    height: 88,
+    borderRadius: 44,
+    backgroundColor: MD3.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
     marginBottom: 8,
   },
-  guestTitle: { fontSize: 20, fontWeight: '500', color: MD3.onSurface },
+  guestTitle: { fontSize: 20, fontWeight: '600', color: MD3.onSurface },
   guestSub: { fontSize: 14, color: MD3.onSurfaceVariant, marginBottom: 8 },
   guestBtn: { width: '100%' },
 
-  profileCard: { margin: 16 },
-  profileInner: { flexDirection: 'row', alignItems: 'center', padding: 20, gap: 16 },
+  section: { paddingHorizontal: 16, marginTop: 16 },
+  sectionTitle: { fontSize: 13, fontWeight: '700', color: MD3.onSurfaceVariant, marginBottom: 10, letterSpacing: 0.5 },
+
+  profileCard: { borderColor: MD3.primaryContainer, borderWidth: 1.5 },
+  profileInner: { flexDirection: 'row', alignItems: 'center', padding: 18, gap: 14 },
   avatarBox: {
-    width: 60,
-    height: 60,
-    borderRadius: 30,
+    width: 56,
+    height: 56,
+    borderRadius: 28,
     backgroundColor: MD3.primary,
     alignItems: 'center',
     justifyContent: 'center',
   },
-  avatarText: { fontSize: 24, fontWeight: '900', color: MD3.onPrimary },
-  profileName: { fontSize: 20, fontWeight: '600', color: MD3.onPrimaryContainer },
-  profileCompany: { fontSize: 13, color: MD3.onPrimaryContainer, opacity: 0.7, marginTop: 2 },
-  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 6 },
+  avatarText: { fontSize: 22, fontWeight: '900', color: MD3.onPrimary },
+  profileName: { fontSize: 18, fontWeight: '700', color: MD3.onSurface },
+  profileCompany: { fontSize: 12, color: MD3.onSurfaceVariant, marginTop: 2 },
+  verifiedRow: { flexDirection: 'row', alignItems: 'center', gap: 4, marginTop: 5 },
   verifiedText: { fontSize: 12, fontWeight: '600' },
   editBtn: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: `${MD3.primary}20`,
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: MD3.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
   },
 
-  statsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 10, marginBottom: 16 },
-  statCard: { flex: 1, alignItems: 'center', padding: 16, gap: 6 },
-  statVal: { fontSize: 20, fontWeight: '700', color: MD3.onSurface },
-  statLabel: { fontSize: 11, color: MD3.onSurfaceVariant },
-
-  section: { paddingHorizontal: 16, marginBottom: 20 },
-  sectionTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurfaceVariant, marginBottom: 10, letterSpacing: 0.5 },
-
-  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 14 },
-  menuDivider: { borderTopWidth: 1, borderTopColor: MD3.outlineVariant },
-  menuIcon: {
+  statsRow: { flexDirection: 'row', paddingHorizontal: 16, gap: 10, marginTop: 12 },
+  statCard: { flex: 1, alignItems: 'center', padding: 14, gap: 6 },
+  statIconBox: {
     width: 40,
     height: 40,
-    borderRadius: 20,
+    borderRadius: 12,
+    backgroundColor: MD3.primaryContainer,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  statVal: { fontSize: 18, fontWeight: '700', color: MD3.onSurface },
+  statLabel: { fontSize: 11, color: MD3.onSurfaceVariant },
+
+  menuRow: { flexDirection: 'row', alignItems: 'center', padding: 14, gap: 12 },
+  menuDivider: { borderTopWidth: 1, borderTopColor: MD3.outlineVariant },
+  menuIcon: {
+    width: 38,
+    height: 38,
+    borderRadius: 12,
     backgroundColor: MD3.primaryContainer,
     alignItems: 'center',
     justifyContent: 'center',
@@ -306,7 +380,13 @@ const styles = StyleSheet.create({
   },
   badgeText: { fontSize: 11, fontWeight: '700', color: MD3.onPrimary },
 
-  notifRow: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 16, paddingVertical: 14 },
+  notifRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingVertical: 13,
+  },
   notifLabel: { fontSize: 14, color: MD3.onSurface },
 
   logoutBtn: { borderColor: MD3.errorContainer },

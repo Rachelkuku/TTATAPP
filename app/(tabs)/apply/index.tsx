@@ -8,6 +8,8 @@ import {
   SafeAreaView,
   Alert,
   Linking,
+  Image,
+  ImageBackground,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { MD3 } from '../../../constants/colors';
@@ -15,6 +17,9 @@ import { M3Card } from '../../../components/common/M3Card';
 import { M3Chip } from '../../../components/common/M3Chip';
 import { useAuthStore } from '../../../store/useAuthStore';
 import { mockNotices } from '../../../utils/mockData';
+
+const mascotImg = require('../../../assets/mascot_clean.png');
+const bgTexture = require('../../../assets/mascot.png');
 
 const APPLY_MENUS = [
   { id: 'visitor', label: '방문자\n사전신청', icon: 'person-add-outline' as const, requireLogin: true },
@@ -72,9 +77,19 @@ export default function ApplyScreen() {
 
   return (
     <SafeAreaView style={styles.safe}>
-      {/* Top App Bar */}
-      <View style={styles.topBar}>
-        <Text style={styles.headline}>신청</Text>
+      {/* 헤더 — 하늘색 배경 */}
+      <View style={styles.header}>
+        <View style={styles.headerInner}>
+          <View style={styles.headerLeft}>
+            <View style={styles.headerIconBox}>
+              <Ionicons name="document-text" size={28} color={MD3.onSurface} />
+            </View>
+            <View>
+              <Text style={styles.headline}>신청</Text>
+              <Text style={styles.subHeadline}>입주사 전용 서비스</Text>
+            </View>
+          </View>
+        </View>
       </View>
 
       <ScrollView showsVerticalScrollIndicator={false}>
@@ -92,7 +107,7 @@ export default function ApplyScreen() {
                     onPress={() => handleApply(menu)}
                   >
                     <View style={[styles.gridIcon, locked && styles.gridIconLocked]}>
-                      <Ionicons name={menu.icon} size={26} color={locked ? MD3.onSurfaceVariant : MD3.primary} />
+                      <Ionicons name={menu.icon} size={26} color={MD3.onSurfaceVariant} />
                       {locked && (
                         <View style={styles.lockDot}>
                           <Ionicons name="lock-closed" size={9} color={MD3.onSurfaceVariant} />
@@ -125,7 +140,7 @@ export default function ApplyScreen() {
                   onPress={() => Alert.alert(item.label, '기존 홈페이지 연동 예정')}
                 >
                   <View style={styles.listIcon}>
-                    <Ionicons name={item.icon} size={20} color={MD3.primary} />
+                    <Ionicons name={item.icon} size={20} color="#4A9EC4" />
                   </View>
                   <View style={{ flex: 1 }}>
                     <Text style={styles.listTitle}>{item.label}</Text>
@@ -141,7 +156,6 @@ export default function ApplyScreen() {
         {/* Notice Section */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>공지사항</Text>
-
           <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
             {NOTICE_TABS.map((tab) => (
               <M3Chip
@@ -152,7 +166,6 @@ export default function ApplyScreen() {
               />
             ))}
           </ScrollView>
-
           <M3Card variant="outlined" style={{ overflow: 'hidden', marginTop: 12 }}>
             {filtered.map((notice, idx) => (
               <View key={notice.id} style={[styles.noticeItem, idx > 0 && styles.listDivider]}>
@@ -162,7 +175,7 @@ export default function ApplyScreen() {
                       {CAT_LABEL[notice.category]}
                     </Text>
                   </View>
-                  {notice.isUrgent && (
+                  {notice.isUrgent && notice.category !== 'urgent' && (
                     <View style={[styles.catBadge, { backgroundColor: MD3.errorContainer }]}>
                       <Text style={[styles.catText, { color: MD3.error }]}>긴급</Text>
                     </View>
@@ -179,19 +192,16 @@ export default function ApplyScreen() {
         {/* Customer Service */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>고객센터</Text>
-          <TouchableOpacity
-            style={styles.csCard}
-            onPress={() => Linking.openURL('tel:02-6000-0114')}
-          >
+          <TouchableOpacity style={styles.csCard} onPress={() => Linking.openURL('tel:02-6000-0114')}>
             <View style={styles.csIconBox}>
-              <Ionicons name="headset" size={28} color={MD3.onPrimary} />
+              <Ionicons name="headset" size={28} color="#FFFFFF" />
             </View>
             <View style={{ flex: 1 }}>
               <Text style={styles.csLabel}>대표 고객센터</Text>
               <Text style={styles.csPhone}>02-6000-0114</Text>
             </View>
             <View style={styles.callChip}>
-              <Ionicons name="call" size={14} color={MD3.primary} />
+              <Ionicons name="call" size={14} color="#4A9EC4" />
               <Text style={styles.callChipText}>전화하기</Text>
             </View>
           </TouchableOpacity>
@@ -204,59 +214,59 @@ export default function ApplyScreen() {
 }
 
 const styles = StyleSheet.create({
-  safe: { flex: 1, backgroundColor: MD3.background },
-  topBar: {
-    backgroundColor: MD3.surface,
-    paddingHorizontal: 16,
-    paddingTop: 16,
-    paddingBottom: 20,
+  safe: { flex: 1, backgroundColor: '#FFFFFF' },
+  header: {
+    backgroundColor: '#E4ECFB',
+    paddingTop: 52,
+    paddingHorizontal: 24,
+    paddingBottom: 28,
+    borderBottomLeftRadius: 32,
+    borderBottomRightRadius: 32,
+    overflow: 'hidden',
+    elevation: 6,
+    shadowColor: '#E4ECFB',
+    shadowOffset: { width: 0, height: 6 },
+    shadowOpacity: 0.3,
+    shadowRadius: 12,
+    marginBottom: 4,
   },
-  headline: { fontSize: 28, fontWeight: '400', color: MD3.onSurface },
+  headerInner: { flexDirection: 'row', alignItems: 'flex-end', zIndex: 1 },
+  headerLeft: { flex: 1, flexDirection: 'row', alignItems: 'center', gap: 16 },
+  headerIconBox: {
+    width: 52, height: 52, borderRadius: 16,
+    backgroundColor: 'rgba(0,0,0,0.05)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headline: { fontSize: 26, fontWeight: '800', color: MD3.onSurface },
+  subHeadline: { fontSize: 13, color: MD3.onSurfaceVariant, marginTop: 3 },
   section: { paddingHorizontal: 16, marginBottom: 24 },
   sectionTitle: { fontSize: 16, fontWeight: '600', color: MD3.onSurface, marginBottom: 12 },
   gridCard: { padding: 8 },
   grid: { flexDirection: 'row', flexWrap: 'wrap' },
   gridItem: { width: '25%', alignItems: 'center', paddingVertical: 12 },
   gridIcon: {
-    width: 60,
-    height: 60,
-    borderRadius: 18,
-    backgroundColor: MD3.primaryContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginBottom: 6,
+    width: 60, height: 60, borderRadius: 18,
+    backgroundColor: '#EAF4FA',
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
   },
   gridIconLocked: { backgroundColor: MD3.surfaceVariant },
   lockDot: {
-    position: 'absolute',
-    right: 4,
-    bottom: 4,
-    backgroundColor: MD3.surface,
-    borderRadius: 8,
-    width: 16,
-    height: 16,
-    alignItems: 'center',
-    justifyContent: 'center',
+    position: 'absolute', right: 4, bottom: 4,
+    backgroundColor: MD3.surface, borderRadius: 8,
+    width: 16, height: 16,
+    alignItems: 'center', justifyContent: 'center',
   },
   gridLabel: { fontSize: 11, color: MD3.onSurfaceVariant, textAlign: 'center', lineHeight: 15 },
   gridLabelLocked: { color: MD3.outline },
-  listRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    padding: 16,
-    gap: 12,
-  },
+  listRow: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
   listDivider: { borderTopWidth: 1, borderTopColor: MD3.outlineVariant },
   listIcon: {
-    width: 40,
-    height: 40,
-    borderRadius: 20,
-    backgroundColor: MD3.primaryContainer,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 40, height: 40, borderRadius: 20,
+    backgroundColor: '#EAF4FA',
+    alignItems: 'center', justifyContent: 'center',
   },
   listTitle: { fontSize: 14, fontWeight: '500', color: MD3.onSurface },
-  listSub: { fontSize: 12, color: MD3.primary, marginTop: 2 },
+  listSub: { fontSize: 12, color: '#4A9EC4', marginTop: 2 },
   chipRow: { gap: 8, paddingVertical: 4 },
   noticeItem: { padding: 16 },
   noticeMeta: { flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 8 },
@@ -266,34 +276,22 @@ const styles = StyleSheet.create({
   noticeTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurface, marginBottom: 4 },
   noticeContent: { fontSize: 13, color: MD3.onSurfaceVariant, lineHeight: 19 },
   csCard: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    backgroundColor: MD3.surface,
-    borderRadius: 16,
-    padding: 16,
-    gap: 14,
-    borderWidth: 1,
-    borderColor: MD3.outlineVariant,
+    flexDirection: 'row', alignItems: 'center',
+    backgroundColor: MD3.surface, borderRadius: 16,
+    padding: 16, gap: 14,
+    borderWidth: 1, borderColor: MD3.outlineVariant,
   },
   csIconBox: {
-    width: 56,
-    height: 56,
-    borderRadius: 28,
-    backgroundColor: MD3.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
+    width: 56, height: 56, borderRadius: 28,
+    backgroundColor: '#4A9EC4',
+    alignItems: 'center', justifyContent: 'center',
   },
   csLabel: { fontSize: 12, color: MD3.onSurfaceVariant, marginBottom: 2 },
   csPhone: { fontSize: 20, fontWeight: '700', color: MD3.onSurface },
   callChip: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    gap: 4,
-    borderWidth: 1,
-    borderColor: MD3.primary,
-    borderRadius: 20,
-    paddingHorizontal: 12,
-    paddingVertical: 6,
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    borderWidth: 1, borderColor: '#7B5EA7',
+    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
   },
-  callChipText: { fontSize: 13, color: MD3.primary, fontWeight: '600' },
+  callChipText: { fontSize: 13, color: '#7B5EA7', fontWeight: '600' },
 });
