@@ -49,6 +49,27 @@ const PARKING_LABEL: Record<ParkingStatus, string> = {
   unknown: '정보없음',
 };
 
+const PARKING_COLOR: Record<ParkingStatus, string> = {
+  free: '#22C55E',
+  busy: '#F59E0B',
+  full: '#EF4444',
+  unknown: MD3.onSurfaceVariant,
+};
+
+const PARKING_BG: Record<ParkingStatus, string> = {
+  free: '#F0FDF4',
+  busy: '#FFFBEB',
+  full: '#FEF2F2',
+  unknown: MD3.surfaceVariant,
+};
+
+const PARKING_ICON: Record<ParkingStatus, React.ComponentProps<typeof Ionicons>['name']> = {
+  free: 'checkmark-circle',
+  busy: 'warning',
+  full: 'close-circle',
+  unknown: 'help-circle',
+};
+
 const QUICK_MENUS = [
   { label: '방문자 신청', icon: 'person-add-outline' as const },
   { label: '임시주차 신청', icon: 'car-outline' as const },
@@ -60,6 +81,7 @@ const QUICK_MENUS = [
 
 export default function HomeScreen() {
   const user = useAuthStore((s) => s.user);
+  const parking = mockParkingInfo;
   const todayNotices = mockNotices.slice(0, 3);
   const todayBenefits = mockBenefits.slice(0, 3);
   const ongoingEvents = mockCoexEvents.filter((e) => e.isActive).slice(0, 3);
@@ -127,6 +149,32 @@ export default function HomeScreen() {
                   </TouchableOpacity>
                 ))}
               </View>
+            </View>
+
+            {/* 주차현황 */}
+            <View style={styles.section}>
+              <View style={styles.sectionRow}>
+                <Text style={styles.sectionTitle}>주차현황</Text>
+                <Text style={styles.updatedAt}>업데이트 {parking.updatedAt.slice(11, 16)}</Text>
+              </View>
+              <M3Card variant="outlined" style={styles.parkingCard}>
+                <View style={styles.parkingInner}>
+                  <View style={styles.parkingIconBox}>
+                    <Ionicons name="car" size={28} color="#4A9EC4" />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.parkingName}>{parking.parkingName}</Text>
+                    <Text style={styles.parkingHint}>실시간 주차 현황</Text>
+                  </View>
+                  <View style={[styles.parkingBadge, { backgroundColor: PARKING_BG[parking.status] }]}>
+                    <Ionicons name={PARKING_ICON[parking.status]} size={16} color={PARKING_COLOR[parking.status]} />
+                    <Text style={[styles.parkingBadgeText, { color: PARKING_COLOR[parking.status] }]}>
+                      {PARKING_LABEL[parking.status]}
+                    </Text>
+                  </View>
+                </View>
+
+              </M3Card>
             </View>
 
             {/* Today's Notices */}
@@ -341,4 +389,21 @@ const styles = StyleSheet.create({
   },
   csBannerTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurface },
   csBannerPhone: { fontSize: 18, fontWeight: '700', color: MD3.primary, marginTop: 4 },
+
+  updatedAt: { fontSize: 12, color: '#AAA' },
+  parkingCard: { marginHorizontal: 16, overflow: 'hidden' },
+  parkingInner: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
+  parkingIconBox: {
+    width: 52, height: 52, borderRadius: 16,
+    backgroundColor: '#EBF7FF',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  parkingName: { fontSize: 15, fontWeight: '700', color: MD3.onSurface },
+  parkingHint: { fontSize: 12, color: '#888', marginTop: 2 },
+  parkingBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
+  },
+  parkingBadgeText: { fontSize: 14, fontWeight: '700' },
+
 });

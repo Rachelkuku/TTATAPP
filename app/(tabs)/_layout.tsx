@@ -74,7 +74,7 @@ export default function TabLayout() {
         name="apply/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="document-text" outlineName="document-text-outline" label="신청" focused={focused} />
+            <NavItem name="document-text" outlineName="document-text-outline" label="신청·공지" focused={focused} />
           ),
         }}
       />
