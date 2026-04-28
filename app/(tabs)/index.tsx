@@ -109,7 +109,7 @@ const QUICK_MENUS = [
   { label: '냉난방 신청', icon: 'thermometer-outline' as const },
   { label: '회의실 대관', icon: 'business-outline' as const },
   { label: '화물EV 신청', icon: 'arrow-up-circle-outline' as const },
-  { label: '고객센터', icon: 'call-outline' as const },
+  { label: '비품대여', icon: 'umbrella-outline' as const },
 ];
 
 export default function HomeScreen() {
