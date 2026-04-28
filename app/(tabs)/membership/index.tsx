@@ -22,7 +22,7 @@ import { mockBenefits } from '../../../utils/mockData';
 import { BenefitCategory, CouponStatus } from '../../../types';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-const mascotImg = require('../../../assets/mascot2_clean.png');
+const mascotImg = require('../../../assets/cacl.png');
 const bgWtc = require('../../../assets/bg_wtc.jpg');
 
 type FilterTab = 'all' | BenefitCategory | 'coupon';
@@ -61,16 +61,13 @@ export default function MembershipScreen() {
         source={bgWtc}
         style={styles.headerBg}
         resizeMode="cover"
-        imageStyle={{ top: -30 }}
+        imageStyle={{ top: -40 }}
       >
         <LinearGradient
-          colors={['rgba(0,20,60,0.45)', 'rgba(0,30,70,0.15)']}
+          colors={['rgba(0,10,30,0.35)', 'rgba(0,0,0,0.05)']}
           style={StyleSheet.absoluteFill}
         />
-        <View style={styles.charWrapper}>
-          <View style={styles.asemBodyPatch} />
-          <Image source={mascotImg} style={styles.charImg} resizeMode="contain" />
-        </View>
+        <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.topBar}>
             <View style={{ width: 40 }} />
@@ -187,7 +184,7 @@ export default function MembershipScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A1E3C' },
   headerBg: {
-    height: Platform.OS === 'ios' ? 155 : 142,
+    height: Platform.OS === 'ios' ? 230 : 210,
     width: '100%',
   },
   topBar: {
@@ -203,18 +200,10 @@ const styles = StyleSheet.create({
   greetingBox: { flex: 1, paddingBottom: 16 },
   greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
   greetingSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
-  charWrapper: {
+  headerCharImg: {
     position: 'absolute', right: 0, bottom: -20,
     width: 322, height: 255,
   },
-  asemBodyPatch: {
-    position: 'absolute',
-    left: 2, top: 76,
-    width: 26, height: 128,
-    backgroundColor: '#EBE8E2',
-    borderRadius: 5,
-  },
-  charImg: { width: 322, height: 255 },
 
   contentWrapper: { flex: 1, marginTop: -32 },
   whitePanel: {
