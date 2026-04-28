@@ -331,7 +331,7 @@ export default function HomeScreen() {
                 </View>
                 <View>
                   <Text style={styles.csBannerTitle}>카카오톡 상담</Text>
-                  <Text style={styles.kakaoText}>채널 바로가기</Text>
+                  <Text style={styles.kakaoText}>고객센터 바로가기</Text>
                 </View>
               </TouchableOpacity>
             </View>
@@ -423,7 +423,7 @@ const styles = StyleSheet.create({
   greetingBox: { flex: 1, paddingBottom: 16 },
   greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
   greetingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
-  headerCharImg: { width: 322, height: 255, position: 'absolute', right: 0, bottom: -20 },
+  headerCharImg: { width: 225, height: 179, position: 'absolute', right: 0, bottom: -14 },
 
   contentWrapper: { flex: 1, marginTop: -32 },
   whitePanel: {

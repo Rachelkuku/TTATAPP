@@ -201,8 +201,8 @@ const styles = StyleSheet.create({
   greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
   greetingSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
   headerCharImg: {
-    position: 'absolute', right: 0, bottom: -20,
-    width: 322, height: 255,
+    position: 'absolute', right: 0, bottom: -14,
+    width: 225, height: 179,
   },
 
   contentWrapper: { flex: 1, marginTop: -32 },

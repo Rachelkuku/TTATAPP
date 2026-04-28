@@ -209,7 +209,7 @@ export default function ApplyScreen() {
               </View>
               <View style={{ flex: 1 }}>
                 <Text style={styles.csLabel}>카카오톡 상담</Text>
-                <Text style={styles.kakaoText}>채널 바로가기</Text>
+                <Text style={styles.kakaoText}>고객센터 바로가기</Text>
               </View>
             </TouchableOpacity>
           </View>
