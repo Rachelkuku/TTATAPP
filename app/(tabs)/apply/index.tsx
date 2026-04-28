@@ -192,19 +192,27 @@ export default function ApplyScreen() {
         {/* Customer Service */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>고객센터</Text>
-          <TouchableOpacity style={styles.csCard} onPress={() => Linking.openURL('tel:02-6000-0114')}>
-            <View style={styles.csIconBox}>
-              <Ionicons name="headset" size={28} color="#FFFFFF" />
-            </View>
-            <View style={{ flex: 1 }}>
-              <Text style={styles.csLabel}>대표 고객센터</Text>
-              <Text style={styles.csPhone}>02-6000-0114</Text>
-            </View>
-            <View style={styles.callChip}>
-              <Ionicons name="call" size={14} color="#4A9EC4" />
-              <Text style={styles.callChipText}>전화하기</Text>
-            </View>
-          </TouchableOpacity>
+          <View style={styles.csCard}>
+            <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('tel:02-6000-0114')}>
+              <View style={styles.csIconBox}>
+                <Ionicons name="headset" size={24} color="#FFFFFF" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.csLabel}>고객센터</Text>
+                <Text style={styles.csPhone}>02-6000-0114</Text>
+              </View>
+            </TouchableOpacity>
+            <View style={styles.csDividerV} />
+            <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('https://pf.kakao.com/_xjxocaT')}>
+              <View style={styles.kakaoIconBox}>
+                <Ionicons name="chatbubble-ellipses" size={24} color="#3C1E1E" />
+              </View>
+              <View style={{ flex: 1 }}>
+                <Text style={styles.csLabel}>카카오톡 상담</Text>
+                <Text style={styles.kakaoText}>채널 바로가기</Text>
+              </View>
+            </TouchableOpacity>
+          </View>
         </View>
 
         <View style={{ height: 32 }} />
@@ -278,20 +286,27 @@ const styles = StyleSheet.create({
   csCard: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: MD3.surface, borderRadius: 16,
-    padding: 16, gap: 14,
     borderWidth: 1, borderColor: MD3.outlineVariant,
+    overflow: 'hidden',
+  },
+  csHalf: {
+    flex: 1, flexDirection: 'row', alignItems: 'center',
+    padding: 16, gap: 12,
+  },
+  csDividerV: {
+    width: 1, height: 56, backgroundColor: MD3.outlineVariant,
   },
   csIconBox: {
-    width: 56, height: 56, borderRadius: 28,
+    width: 48, height: 48, borderRadius: 24,
     backgroundColor: '#4A9EC4',
     alignItems: 'center', justifyContent: 'center',
   },
-  csLabel: { fontSize: 12, color: MD3.onSurfaceVariant, marginBottom: 2 },
-  csPhone: { fontSize: 20, fontWeight: '700', color: MD3.onSurface },
-  callChip: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    borderWidth: 1, borderColor: '#7B5EA7',
-    borderRadius: 20, paddingHorizontal: 12, paddingVertical: 6,
+  kakaoIconBox: {
+    width: 48, height: 48, borderRadius: 24,
+    backgroundColor: '#FEE500',
+    alignItems: 'center', justifyContent: 'center',
   },
-  callChipText: { fontSize: 13, color: '#7B5EA7', fontWeight: '600' },
+  csLabel: { fontSize: 11, color: MD3.onSurfaceVariant, marginBottom: 3 },
+  csPhone: { fontSize: 16, fontWeight: '700', color: MD3.onSurface },
+  kakaoText: { fontSize: 14, fontWeight: '700', color: '#3C1E1E' },
 });

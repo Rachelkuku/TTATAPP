@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -11,7 +11,9 @@ import {
   ImageBackground,
   Platform,
   StatusBar,
+  Modal,
 } from 'react-native';
+import qrcode from 'qrcode-generator';
 import { router } from 'expo-router';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,8 +23,39 @@ import { mockNotices, mockBenefits, mockCoexEvents, mockParkingInfo } from '../.
 import { useAuthStore } from '../../store/useAuthStore';
 import { ParkingStatus } from '../../types';
 
-const mascotImg = require('../../assets/mascot_clean.png');
-const bgTexture = require('../../assets/bg_blue.png');
+const mascotImg = require('../../assets/mascot2_clean.png');
+const bgWtc = require('../../assets/bg_wtc.jpg');
+
+function QRView({ value, size = 220 }: { value: string; size?: number }) {
+  const matrix: boolean[][] = React.useMemo(() => {
+    try {
+      const qr = qrcode(0, 'M');
+      qr.addData(value);
+      qr.make();
+      const count = qr.getModuleCount();
+      return Array.from({ length: count }, (_, r) =>
+        Array.from({ length: count }, (_, c) => qr.isDark(r, c))
+      );
+    } catch {
+      return [];
+    }
+  }, [value]);
+
+  if (!matrix.length) return null;
+  const cell = size / matrix.length;
+
+  return (
+    <View style={{ width: size, height: size }}>
+      {matrix.map((row, r) => (
+        <View key={r} style={{ flexDirection: 'row' }}>
+          {row.map((dark, c) => (
+            <View key={c} style={{ width: cell, height: cell, backgroundColor: dark ? '#1A3A5C' : '#FFFFFF' }} />
+          ))}
+        </View>
+      ))}
+    </View>
+  );
+}
 
 const NOTICE_CAT_LABEL: Record<string, string> = {
   operations: '운영',
@@ -86,17 +119,37 @@ export default function HomeScreen() {
   const todayBenefits = mockBenefits.slice(0, 3);
   const ongoingEvents = mockCoexEvents.filter((e) => e.isActive).slice(0, 3);
 
+  const [qrVisible, setQrVisible] = useState(false);
+  const [qrTimestamp, setQrTimestamp] = useState(() => Date.now());
+
+  const openQR = useCallback(() => {
+    setQrTimestamp(Date.now());
+    setQrVisible(true);
+  }, []);
+
+  const qrValue = user
+    ? `WTC-GATE:${user.id}:${user.companyId}:${qrTimestamp}`
+    : `WTC-GATE:GUEST:${qrTimestamp}`;
+
   return (
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* 헤더 — 하늘색 빌딩 배경 + 마스코트 오른쪽 */}
+      {/* 헤더 — WTC 빌딩 실사 배경 + 마스코트 오른쪽 */}
       <ImageBackground
-        source={bgTexture}
+        source={bgWtc}
         style={styles.headerBg}
         resizeMode="cover"
-        imageStyle={{ opacity: 1 }}
+        imageStyle={{ top: -30 }}
       >
+        <LinearGradient
+          colors={['rgba(0,20,60,0.45)', 'rgba(0,30,70,0.15)']}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.charWrapper}>
+          <View style={styles.asemBodyPatch} />
+          <Image source={mascotImg} style={styles.charImg} resizeMode="contain" />
+        </View>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.topBar}>
             <Text style={styles.appBarHeadline}>WTC ASEM·TRADE</Text>
@@ -117,7 +170,6 @@ export default function HomeScreen() {
               </Text>
               <Text style={styles.greetingSubtitle}>오늘도 함께 해요 😊</Text>
             </View>
-            <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
           </View>
         </SafeAreaView>
       </ImageBackground>
@@ -265,28 +317,89 @@ export default function HomeScreen() {
             </View>
 
             {/* Customer Service Banner */}
-            <TouchableOpacity style={styles.csBanner} onPress={() => Linking.openURL('tel:02-6000-0114')}>
-              <View style={styles.csBannerIcon}>
-                <Ionicons name="headset" size={24} color={MD3.onPrimary} />
-              </View>
-              <View>
-                <Text style={styles.csBannerTitle}>고객센터 바로 연결</Text>
-                <Text style={styles.csBannerPhone}>02-6000-0114</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={20} color={MD3.onSurfaceVariant} style={{ marginLeft: 'auto' }} />
+            <View style={styles.csBanner}>
+              <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('tel:02-6000-0114')}>
+                <View style={styles.csBannerIcon}>
+                  <Ionicons name="headset" size={22} color="#FFFFFF" />
+                </View>
+                <View>
+                  <Text style={styles.csBannerTitle}>고객센터</Text>
+                  <Text style={styles.csBannerPhone}>02-6000-0114</Text>
+                </View>
+              </TouchableOpacity>
+              <View style={styles.csBannerDivider} />
+              <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('https://pf.kakao.com/_xjxocaT')}>
+                <View style={styles.kakaoIconBox}>
+                  <Ionicons name="chatbubble-ellipses" size={22} color="#3C1E1E" />
+                </View>
+                <View>
+                  <Text style={styles.csBannerTitle}>카카오톡 상담</Text>
+                  <Text style={styles.kakaoText}>채널 바로가기</Text>
+                </View>
+              </TouchableOpacity>
+            </View>
+
+            {/* 스피드게이트 출입 QR 버튼 */}
+            <TouchableOpacity style={styles.qrBtn} onPress={openQR} activeOpacity={0.85}>
+              <LinearGradient colors={['#1A3A5C', '#2A5CA8']} style={styles.qrBtnGradient}>
+                <View style={styles.qrBtnLeft}>
+                  <View style={styles.qrBtnIconBox}>
+                    <Ionicons name="qr-code-outline" size={28} color="#FFFFFF" />
+                  </View>
+                  <View>
+                    <Text style={styles.qrBtnTitle}>스피드게이트 출입 QR</Text>
+                    <Text style={styles.qrBtnSub}>탭하여 QR 코드 열기</Text>
+                  </View>
+                </View>
+                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
+              </LinearGradient>
             </TouchableOpacity>
 
           </ScrollView>
         </View>
       </View>
+
+      {/* QR 모달 */}
+      <Modal visible={qrVisible} transparent animationType="fade" onRequestClose={() => setQrVisible(false)}>
+        <View style={styles.qrOverlay}>
+          <View style={styles.qrSheet}>
+            {/* 헤더 */}
+            <View style={styles.qrSheetHeader}>
+              <Text style={styles.qrSheetTitle}>스피드게이트 출입 QR</Text>
+              <TouchableOpacity onPress={() => setQrVisible(false)} style={styles.qrCloseBtn}>
+                <Ionicons name="close" size={22} color={MD3.onSurface} />
+              </TouchableOpacity>
+            </View>
+
+            {/* QR 코드 */}
+            <View style={styles.qrCodeBox}>
+              <QRView value={qrValue} size={220} />
+            </View>
+
+            {/* 유저 정보 */}
+            <Text style={styles.qrUserName}>{user ? user.name : '게스트'}</Text>
+            <Text style={styles.qrCompanyName}>{user ? user.companyName : 'WTC SEOUL'}</Text>
+
+            <View style={styles.qrDivider} />
+
+            {/* 새로고침 */}
+            <TouchableOpacity style={styles.qrRefreshBtn} onPress={() => setQrTimestamp(Date.now())}>
+              <Ionicons name="refresh" size={16} color={MD3.primary} />
+              <Text style={styles.qrRefreshText}>QR 새로고침</Text>
+            </TouchableOpacity>
+
+            <Text style={styles.qrNotice}>본 QR은 스피드게이트 출입 전용입니다</Text>
+          </View>
+        </View>
+      </Modal>
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#3B82F6' },
+  container: { flex: 1, backgroundColor: '#0A1E3C' },
   headerBg: {
-    height: Platform.OS === 'ios' ? 250 : 230,
+    height: Platform.OS === 'ios' ? 155 : 142,
     width: '100%',
   },
   topBar: {
@@ -311,9 +424,20 @@ const styles = StyleSheet.create({
     paddingLeft: 24,
   },
   greetingBox: { flex: 1, paddingBottom: 16 },
-  greetingTitle: { fontSize: 22, fontWeight: '700', color: '#1A3A5C', lineHeight: 30 },
-  greetingSubtitle: { fontSize: 14, color: '#2A5070', marginTop: 4 },
-  headerCharImg: { width: 322, height: 255, position: 'absolute', right: -10, bottom: -20 },
+  greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
+  greetingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
+  charWrapper: {
+    position: 'absolute', right: 0, bottom: -20,
+    width: 322, height: 255,
+  },
+  asemBodyPatch: {
+    position: 'absolute',
+    left: 2, top: 76,
+    width: 26, height: 128,
+    backgroundColor: '#EBE8E2',
+    borderRadius: 5,
+  },
+  charImg: { width: 322, height: 255 },
 
   contentWrapper: { flex: 1, marginTop: -32 },
   whitePanel: {
@@ -380,15 +504,28 @@ const styles = StyleSheet.create({
   csBanner: {
     flexDirection: 'row', alignItems: 'center',
     backgroundColor: '#F9FAFB', borderRadius: 16,
-    marginHorizontal: 16, padding: 16, gap: 16,
+    marginHorizontal: 16,
     borderWidth: 1, borderColor: '#EEEEEE',
+    overflow: 'hidden',
+  },
+  csHalf: {
+    flex: 1, flexDirection: 'row', alignItems: 'center',
+    padding: 14, gap: 10,
+  },
+  csBannerDivider: {
+    width: 1, height: 52, backgroundColor: '#E0E0E0',
   },
   csBannerIcon: {
-    width: 48, height: 48, borderRadius: 24,
+    width: 44, height: 44, borderRadius: 22,
     backgroundColor: MD3.primary, alignItems: 'center', justifyContent: 'center',
   },
-  csBannerTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurface },
-  csBannerPhone: { fontSize: 18, fontWeight: '700', color: MD3.primary, marginTop: 4 },
+  kakaoIconBox: {
+    width: 44, height: 44, borderRadius: 22,
+    backgroundColor: '#FEE500', alignItems: 'center', justifyContent: 'center',
+  },
+  csBannerTitle: { fontSize: 11, fontWeight: '600', color: MD3.onSurfaceVariant, marginBottom: 3 },
+  csBannerPhone: { fontSize: 15, fontWeight: '700', color: MD3.primary },
+  kakaoText: { fontSize: 13, fontWeight: '700', color: '#3C1E1E' },
 
   updatedAt: { fontSize: 12, color: '#AAA' },
   parkingCard: { marginHorizontal: 16, overflow: 'hidden' },
@@ -405,5 +542,63 @@ const styles = StyleSheet.create({
     paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
   },
   parkingBadgeText: { fontSize: 14, fontWeight: '700' },
+
+  qrBtn: {
+    marginHorizontal: 16, marginTop: 12, marginBottom: 8,
+    borderRadius: 16, overflow: 'hidden',
+    shadowColor: '#1A3A5C', shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
+  },
+  qrBtnGradient: {
+    flexDirection: 'row', alignItems: 'center',
+    paddingHorizontal: 20, paddingVertical: 18, justifyContent: 'space-between',
+  },
+  qrBtnLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
+  qrBtnIconBox: {
+    width: 48, height: 48, borderRadius: 14,
+    backgroundColor: 'rgba(255,255,255,0.15)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  qrBtnTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
+  qrBtnSub: { fontSize: 12, color: 'rgba(255,255,255,0.7)' },
+
+  qrOverlay: {
+    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  qrSheet: {
+    backgroundColor: '#FFFFFF', borderRadius: 28,
+    paddingHorizontal: 28, paddingBottom: 28, paddingTop: 20,
+    width: 320, alignItems: 'center',
+    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
+    shadowOpacity: 0.3, shadowRadius: 20, elevation: 20,
+  },
+  qrSheetHeader: {
+    flexDirection: 'row', alignItems: 'center',
+    justifyContent: 'space-between', width: '100%', marginBottom: 20,
+  },
+  qrSheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A3A5C' },
+  qrCloseBtn: {
+    width: 32, height: 32, borderRadius: 16,
+    backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center',
+  },
+  qrCodeBox: {
+    padding: 16, borderRadius: 20,
+    backgroundColor: '#FFFFFF',
+    borderWidth: 1.5, borderColor: '#E8EEF8',
+    marginBottom: 20,
+    shadowColor: '#1A3A5C', shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
+  },
+  qrUserName: { fontSize: 18, fontWeight: '700', color: MD3.onSurface, marginBottom: 4 },
+  qrCompanyName: { fontSize: 13, color: MD3.onSurfaceVariant },
+  qrDivider: { width: '100%', height: 1, backgroundColor: '#EEEEEE', marginVertical: 16 },
+  qrRefreshBtn: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 16, paddingVertical: 8,
+    borderRadius: 20, borderWidth: 1, borderColor: MD3.primary, marginBottom: 12,
+  },
+  qrRefreshText: { fontSize: 13, fontWeight: '600', color: MD3.primary },
+  qrNotice: { fontSize: 11, color: '#AAA', textAlign: 'center' },
 
 });

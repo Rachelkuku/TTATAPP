@@ -13,6 +13,7 @@ import {
   StatusBar,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
+import { LinearGradient } from 'expo-linear-gradient';
 import { router } from 'expo-router';
 import { MD3 } from '../../../constants/colors';
 import { M3Card } from '../../../components/common/M3Card';
@@ -21,8 +22,8 @@ import { mockBenefits } from '../../../utils/mockData';
 import { BenefitCategory, CouponStatus } from '../../../types';
 import { useAuthStore } from '../../../store/useAuthStore';
 
-const mascotImg = require('../../../assets/mascot_clean.png');
-const bgTexture = require('../../../assets/bg_lavender2.png');
+const mascotImg = require('../../../assets/mascot2_clean.png');
+const bgWtc = require('../../../assets/bg_wtc.jpg');
 
 type FilterTab = 'all' | BenefitCategory | 'coupon';
 
@@ -55,13 +56,21 @@ export default function MembershipScreen() {
     <View style={styles.container}>
       <StatusBar barStyle="dark-content" />
 
-      {/* 헤더 — 라벤더 빌딩 배경 + 마스코트 오른쪽 */}
+      {/* 헤더 — WTC 빌딩 실사 배경 + 마스코트 오른쪽 */}
       <ImageBackground
-        source={bgTexture}
+        source={bgWtc}
         style={styles.headerBg}
         resizeMode="cover"
-        imageStyle={{ opacity: 1 }}
+        imageStyle={{ top: -30 }}
       >
+        <LinearGradient
+          colors={['rgba(0,20,60,0.45)', 'rgba(0,30,70,0.15)']}
+          style={StyleSheet.absoluteFill}
+        />
+        <View style={styles.charWrapper}>
+          <View style={styles.asemBodyPatch} />
+          <Image source={mascotImg} style={styles.charImg} resizeMode="contain" />
+        </View>
         <SafeAreaView style={{ flex: 1 }}>
           <View style={styles.topBar}>
             <View style={{ width: 40 }} />
@@ -73,7 +82,6 @@ export default function MembershipScreen() {
               <Text style={styles.greetingTitle}>ASEM·TRADE</Text>
               <Text style={styles.greetingSubtitle}>입주사 전용{'\n'}프리미엄 혜택</Text>
             </View>
-            <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
           </View>
         </SafeAreaView>
       </ImageBackground>
@@ -177,11 +185,10 @@ export default function MembershipScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#DDD8F5' },
+  container: { flex: 1, backgroundColor: '#0A1E3C' },
   headerBg: {
-    height: Platform.OS === 'ios' ? 250 : 230,
+    height: Platform.OS === 'ios' ? 155 : 142,
     width: '100%',
-    backgroundColor: '#DDD8F5',
   },
   topBar: {
     flexDirection: 'row',
@@ -196,7 +203,18 @@ const styles = StyleSheet.create({
   greetingBox: { flex: 1, paddingBottom: 16 },
   greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
   greetingSubtitle: { fontSize: 13, color: 'rgba(255,255,255,0.8)', marginTop: 4 },
-  headerCharImg: { width: 322, height: 255, position: 'absolute', right: -10, bottom: -20 },
+  charWrapper: {
+    position: 'absolute', right: 0, bottom: -20,
+    width: 322, height: 255,
+  },
+  asemBodyPatch: {
+    position: 'absolute',
+    left: 2, top: 76,
+    width: 26, height: 128,
+    backgroundColor: '#EBE8E2',
+    borderRadius: 5,
+  },
+  charImg: { width: 322, height: 255 },
 
   contentWrapper: { flex: 1, marginTop: -32 },
   whitePanel: {
