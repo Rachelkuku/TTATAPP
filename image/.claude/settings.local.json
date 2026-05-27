@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx expo *)",
+      "Bash(npx tsc *)",
+      "Bash(node \"C:/Users/user/어플개발/wtc-membership-app/node_modules/.bin/tsc\" --noEmit --project \"C:/Users/user/어플개발/wtc-membership-app/tsconfig.json\")",
+      "Bash(cmd *)",
+      "Bash(curl -s http://localhost:8081)",
+      "PowerShell(Start-Process \"http://localhost:8081\")",
+      "Bash(curl -s \"http://localhost:8081/_expo/fingerprint\")",
+      "Bash(curl -s \"http://localhost:8081/\")",
+      "Bash(python3 *)",
+      "Bash(python *)",
+      "Bash(pip install *)",
+      "Bash(git push *)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git commit -m 'fix: update vercel.json with correct rewrite rules and cache headers *)"
+    ]
+  }
+}
