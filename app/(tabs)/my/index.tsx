@@ -58,9 +58,9 @@ export default function MyScreen() {
       {
         text: '로그아웃',
         style: 'destructive',
-        onPress: () => {
-          logout();
-          router.replace('/(auth)/login');
+        onPress: async () => {
+          await logout();
+          router.replace('/gateway');
         },
       },
     ]);

@@ -11,8 +11,12 @@ export default function RootLayout() {
       <QueryClientProvider client={queryClient}>
         <StatusBar style="light" />
         <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="index" />
+          <Stack.Screen name="gateway" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="(visitor)" />
+          <Stack.Screen name="webview" />
           <Stack.Screen name="notice/[id]" options={{ headerShown: true, title: '공지사항', headerBackTitle: '' }} />
           <Stack.Screen name="coex/[id]" options={{ headerShown: true, title: '전시 상세', headerBackTitle: '' }} />
           <Stack.Screen name="poll/[id]" options={{ headerShown: false }} />

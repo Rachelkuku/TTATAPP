@@ -1,0 +1,629 @@
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  ScrollView,
+  TouchableOpacity,
+  StyleSheet,
+  SafeAreaView,
+  Platform,
+  StatusBar,
+  ImageBackground,
+  Linking,
+  Dimensions,
+} from 'react-native';
+import { router } from 'expo-router';
+import { LinearGradient } from 'expo-linear-gradient';
+import { Ionicons } from '@expo/vector-icons';
+import { MD3 } from '../../constants/colors';
+import { I18N, EXTERNAL_URLS, Lang } from '../../constants/i18n';
+import { M3Card } from '../../components/common/M3Card';
+import { useAuthStore } from '../../store/useAuthStore';
+
+const bgWtc = require('../../assets/bg_wtc.jpg');
+const { width } = Dimensions.get('window');
+
+// 주차율 (고정 목업 데이터)
+const PARKING_RATE = 78;
+const PARKING_STATUS: 'free' | 'busy' | 'full' = 'free';
+
+function openWebView(url: string, title: string) {
+  router.push({
+    pathname: '/webview',
+    params: { url, title },
+  } as any);
+}
+
+export default function VisitorHomeScreen() {
+  const [lang, setLang] = useState<Lang>('KR');
+  const { logout } = useAuthStore();
+  const t = I18N.visitor;
+
+  const parkingColor = PARKING_STATUS === 'free' ? '#22C55E' : PARKING_STATUS === 'busy' ? '#F59E0B' : '#EF4444';
+  const parkingBg = PARKING_STATUS === 'free' ? '#F0FDF4' : PARKING_STATUS === 'busy' ? '#FFFBEB' : '#FEF2F2';
+  const parkingIcon = PARKING_STATUS === 'free' ? 'checkmark-circle' : PARKING_STATUS === 'busy' ? 'warning' : 'close-circle';
+  const parkingLabel = lang === 'KR'
+    ? (PARKING_STATUS === 'free' ? t.parkingFreeLabel.KR : t.parkingBusyLabel.KR)
+    : (PARKING_STATUS === 'free' ? t.parkingFreeLabel.EN : t.parkingBusyLabel.EN);
+
+  return (
+    <View style={styles.container}>
+      <StatusBar barStyle="light-content" />
+
+      {/* ─── 헤더 배경 ─── */}
+      <ImageBackground
+        source={bgWtc}
+        style={styles.headerBg}
+        resizeMode="cover"
+        imageStyle={{ top: -40 }}
+      >
+        <LinearGradient
+          colors={['rgba(0,10,40,0.5)', 'rgba(10,30,70,0.1)']}
+          style={StyleSheet.absoluteFill}
+        />
+        <SafeAreaView style={styles.headerSafe}>
+          {/* 상단바 */}
+          <View style={styles.topBar}>
+            <TouchableOpacity onPress={() => router.replace('/gateway')} style={styles.backBtn}>
+              <Ionicons name="chevron-back" size={22} color="#FFF" />
+            </TouchableOpacity>
+            <Text style={styles.headerTitle}>WTCSEOUL</Text>
+            {/* KR / EN 토글 */}
+            <View style={styles.langRow}>
+              <TouchableOpacity
+                style={[styles.langBtn, lang === 'KR' && styles.langBtnActive]}
+                onPress={() => setLang('KR')}
+              >
+                <Text style={[styles.langText, lang === 'KR' && styles.langTextActive]}>KR</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.langBtn, lang === 'EN' && styles.langBtnActive]}
+                onPress={() => setLang('EN')}
+              >
+                <Text style={[styles.langText, lang === 'EN' && styles.langTextActive]}>EN</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+
+          {/* 헤더 텍스트 */}
+          <View style={styles.headerContent}>
+            <Text style={styles.headerSubLabel}>
+              {lang === 'KR' ? '방문객 안내' : 'Visitor Guide'}
+            </Text>
+            <Text style={styles.headerWelcome}>{t.headerSub[lang]}</Text>
+          </View>
+        </SafeAreaView>
+      </ImageBackground>
+
+      {/* ─── 메인 스크롤 ─── */}
+      <View style={styles.contentWrapper}>
+        <View style={styles.whitePanel}>
+          <View style={styles.dragHandleWrap}>
+            <View style={styles.dragHandle} />
+          </View>
+
+          <ScrollView
+            style={styles.scroll}
+            showsVerticalScrollIndicator={false}
+            contentContainerStyle={{ paddingBottom: 50 }}
+          >
+
+            {/* ① 실시간 주차 현황 */}
+            <View style={styles.section}>
+              <SectionHeader title={t.parkingTitle[lang]} />
+              <M3Card variant="outlined" style={styles.parkingCard}>
+                <View style={styles.parkingTop}>
+                  <View style={styles.parkingIconBox}>
+                    <Ionicons name="car" size={26} color={MD3.primary} />
+                  </View>
+                  <View style={{ flex: 1 }}>
+                    <Text style={styles.parkingName}>WTC SEOUL {lang === 'KR' ? '주차장' : 'Parking'}</Text>
+                    <Text style={styles.parkingHint}>{lang === 'KR' ? '실시간 주차 현황' : 'Real-time status'}</Text>
+                  </View>
+                  <View style={[styles.parkingBadge, { backgroundColor: parkingBg }]}>
+                    <Ionicons name={parkingIcon} size={15} color={parkingColor} />
+                    <Text style={[styles.parkingBadgeText, { color: parkingColor }]}>{parkingLabel}</Text>
+                  </View>
+                </View>
+
+                {/* 주차율 바 */}
+                <View style={styles.rateBarWrap}>
+                  <View style={styles.rateBarBg}>
+                    <LinearGradient
+                      colors={['#22C55E', '#16A34A']}
+                      start={{ x: 0, y: 0 }} end={{ x: 1, y: 0 }}
+                      style={[styles.rateBarFill, { width: `${PARKING_RATE}%` }]}
+                    />
+                  </View>
+                  <Text style={styles.rateLabel}>{PARKING_RATE}%</Text>
+                </View>
+
+                <Text style={styles.parkingMsg}>
+                  {PARKING_STATUS === 'free' ? t.parkingFreeMsg[lang] : t.parkingBusyMsg[lang]}
+                </Text>
+              </M3Card>
+            </View>
+
+            {/* ② 코엑스 전시회 */}
+            <View style={styles.section}>
+              <SectionHeaderWithBtn
+                title={t.coexTitle[lang]}
+                btnLabel={t.coexBtn[lang]}
+                onPress={() => openWebView(EXTERNAL_URLS.coex, lang === 'KR' ? '코엑스 전시 일정' : 'COEX Exhibitions')}
+              />
+              <M3Card variant="outlined" style={styles.listCard}>
+                {t.coexEvents.map((ev, idx) => {
+                  const evData = ev[lang];
+                  return (
+                    <View
+                      key={idx}
+                      style={[styles.eventRow, idx < t.coexEvents.length - 1 && styles.rowDivider]}
+                    >
+                      <View style={styles.eventDateBox}>
+                        <Text style={styles.eventHall}>{evData.hall}</Text>
+                      </View>
+                      <View style={{ flex: 1, gap: 3 }}>
+                        <Text style={styles.eventTitle} numberOfLines={1}>{evData.title}</Text>
+                        <Text style={styles.eventDate}>{evData.date}</Text>
+                      </View>
+                      <Ionicons name="open-outline" size={15} color={MD3.onSurfaceVariant} />
+                    </View>
+                  );
+                })}
+              </M3Card>
+              <TouchableOpacity
+                style={styles.outLinkBtn}
+                onPress={() => openWebView(EXTERNAL_URLS.coex, lang === 'KR' ? '코엑스 전시 일정' : 'COEX Exhibitions')}
+              >
+                <Ionicons name="calendar-outline" size={16} color={MD3.primary} />
+                <Text style={styles.outLinkBtnText}>{t.coexBtn[lang]}</Text>
+                <Ionicons name="arrow-forward" size={15} color={MD3.primary} />
+              </TouchableOpacity>
+            </View>
+
+            {/* ③ 스타필드 식당 안내 */}
+            <View style={styles.section}>
+              <SectionHeader title={t.diningTitle[lang]} />
+              <M3Card variant="elevated" style={styles.diningCard}>
+                <LinearGradient
+                  colors={['#FFF8F0', '#FFF0E0']}
+                  style={styles.diningGradient}
+                >
+                  <View style={styles.diningIconRow}>
+                    <View style={styles.diningIconBox}>
+                      <Ionicons name="restaurant" size={28} color="#E07B39" />
+                    </View>
+                    <View style={styles.diningBadge}>
+                      <Text style={styles.diningBadgeText}>Starfield COEX Mall</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.diningDesc}>{t.diningDesc[lang]}</Text>
+                  <TouchableOpacity
+                    style={styles.diningBtn}
+                    onPress={() => openWebView(EXTERNAL_URLS.dining, lang === 'KR' ? '스타필드 코엑스몰 식당' : 'Starfield Coex Mall Dining')}
+                  >
+                    <Text style={styles.diningBtnText}>{t.diningBtn[lang]}</Text>
+                    <Ionicons name="arrow-forward" size={15} color="#E07B39" />
+                  </TouchableOpacity>
+                </LinearGradient>
+              </M3Card>
+            </View>
+
+            {/* ④ 교통 편의 서비스 */}
+            <View style={styles.section}>
+              <SectionHeader title={t.travelTitle[lang]} />
+              <View style={styles.travelGrid}>
+                {/* 리무진 */}
+                <M3Card variant="outlined" style={styles.travelCard}>
+                  <LinearGradient colors={['#EBF7FF', '#F7FCFF']} style={styles.travelCardInner}>
+                    <View style={[styles.travelIconBox, { backgroundColor: MD3.primaryContainer }]}>
+                      <Ionicons name="bus-outline" size={26} color={MD3.primary} />
+                    </View>
+                    <Text style={styles.travelCardTitle}>{t.limoTitle[lang]}</Text>
+                    <Text style={styles.travelCardDesc}>{t.limoDesc[lang]}</Text>
+                    <TouchableOpacity
+                      style={[styles.travelBtn, { borderColor: MD3.primary }]}
+                      onPress={() => openWebView(EXTERNAL_URLS.limo, lang === 'KR' ? '도심공항 리무진' : 'Airport Limousine')}
+                    >
+                      <Text style={[styles.travelBtnText, { color: MD3.primary }]}>{t.limoBtn[lang]}</Text>
+                      <Ionicons name="open-outline" size={13} color={MD3.primary} />
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </M3Card>
+
+                {/* GOODLUG */}
+                <M3Card variant="outlined" style={styles.travelCard}>
+                  <LinearGradient colors={['#F0FDF4', '#F7FCF9']} style={styles.travelCardInner}>
+                    <View style={[styles.travelIconBox, { backgroundColor: '#DCFCE7' }]}>
+                      <Ionicons name="briefcase-outline" size={26} color="#16A34A" />
+                    </View>
+                    <Text style={styles.travelCardTitle}>{t.luggageTitle[lang]}</Text>
+                    <Text style={styles.travelCardDesc}>{t.luggageDesc[lang]}</Text>
+                    <TouchableOpacity
+                      style={[styles.travelBtn, { borderColor: '#16A34A' }]}
+                      onPress={() => openWebView(EXTERNAL_URLS.luggage, 'GOODLUG')}
+                    >
+                      <Text style={[styles.travelBtnText, { color: '#16A34A' }]}>{t.luggageBtn[lang]}</Text>
+                      <Ionicons name="open-outline" size={13} color="#16A34A" />
+                    </TouchableOpacity>
+                  </LinearGradient>
+                </M3Card>
+              </View>
+            </View>
+
+            {/* ⑤ 편의시설 & 접근성 */}
+            <View style={styles.section}>
+              <SectionHeader title={t.amenitiesTitle[lang]} />
+              <View style={styles.amenitiesGrid}>
+                {t.amenities.map((item, idx) => {
+                  const d = item[lang];
+                  return (
+                    <M3Card key={idx} variant="outlined" style={styles.amenityCard}>
+                      <View style={styles.amenityIconBox}>
+                        <Ionicons name={item.icon} size={24} color={MD3.primary} />
+                      </View>
+                      <Text style={styles.amenityTitle}>{d.title}</Text>
+                      <Text style={styles.amenityDesc}>{d.desc}</Text>
+                    </M3Card>
+                  );
+                })}
+              </View>
+            </View>
+
+            {/* ⑥ K-컬처 명소 */}
+            <View style={[styles.section, { paddingHorizontal: 0 }]}>
+              <View style={{ paddingHorizontal: 16 }}>
+                <SectionHeader title={t.attractionsTitle[lang]} />
+              </View>
+              <ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.attractionsScroll}
+              >
+                {t.attractions.map((item, idx) => (
+                  <View key={idx} style={styles.attractionCard}>
+                    <LinearGradient
+                      colors={getAttractionGradient(idx)}
+                      style={styles.attractionImgBox}
+                    >
+                      <Ionicons name={item.icon} size={34} color="#FFFFFF" />
+                    </LinearGradient>
+                    <View style={styles.attractionCategoryBadge}>
+                      <Text style={styles.attractionCategoryText}>{item.category[lang]}</Text>
+                    </View>
+                    <Text style={styles.attractionName} numberOfLines={2}>
+                      {lang === 'KR' ? item.KR : item.EN}
+                    </Text>
+                  </View>
+                ))}
+              </ScrollView>
+            </View>
+
+            {/* 게이트웨이로 돌아가기 */}
+            <TouchableOpacity
+              style={styles.backToGateway}
+              onPress={async () => {
+                await logout();
+                router.replace('/gateway');
+              }}
+            >
+              <Ionicons name="swap-horizontal-outline" size={16} color={MD3.onSurfaceVariant} />
+              <Text style={styles.backToGatewayText}>
+                {lang === 'KR' ? '입주사 임직원이신가요?' : 'Are you a tenant staff?'}
+              </Text>
+              <Ionicons name="chevron-forward" size={15} color={MD3.onSurfaceVariant} />
+            </TouchableOpacity>
+
+          </ScrollView>
+        </View>
+      </View>
+    </View>
+  );
+}
+
+// ─── 헬퍼 컴포넌트 ───────────────────────────────────────────────
+
+function SectionHeader({ title }: { title: string }) {
+  return (
+    <View style={styles.sectionHeaderRow}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+    </View>
+  );
+}
+
+function SectionHeaderWithBtn({
+  title,
+  btnLabel,
+  onPress,
+}: {
+  title: string;
+  btnLabel: string;
+  onPress: () => void;
+}) {
+  return (
+    <View style={[styles.sectionHeaderRow, { justifyContent: 'space-between' }]}>
+      <Text style={styles.sectionTitle}>{title}</Text>
+      <TouchableOpacity onPress={onPress}>
+        <Text style={styles.seeAllText}>{btnLabel}</Text>
+      </TouchableOpacity>
+    </View>
+  );
+}
+
+function getAttractionGradient(idx: number): [string, string] {
+  const palettes: [string, string][] = [
+    ['#6366F1', '#8B5CF6'],
+    ['#EC4899', '#F43F5E'],
+    ['#0EA5E9', '#38BDF8'],
+    ['#10B981', '#34D399'],
+    ['#F59E0B', '#FBBF24'],
+    ['#EF4444', '#F87171'],
+    ['#06B6D4', '#22D3EE'],
+    ['#8B5CF6', '#A78BFA'],
+    ['#F97316', '#FB923C'],
+  ];
+  return palettes[idx % palettes.length];
+}
+
+// ─── 스타일 ──────────────────────────────────────────────────────
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: '#0A1E3C' },
+
+  // 헤더
+  headerBg: {
+    height: Platform.OS === 'ios' ? 220 : 200,
+    width: '100%',
+  },
+  headerSafe: { flex: 1 },
+  topBar: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    paddingHorizontal: 16,
+    paddingTop: Platform.OS === 'android' ? (StatusBar.currentHeight ?? 0) + 8 : 4,
+    height: Platform.OS === 'ios' ? 52 : 52 + (StatusBar.currentHeight ?? 0),
+  },
+  backBtn: {
+    width: 36, height: 36, borderRadius: 18,
+    backgroundColor: 'rgba(0,0,0,0.2)',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  headerTitle: { fontSize: 17, fontWeight: '800', color: '#FFF', letterSpacing: 0.5 },
+  langRow: {
+    flexDirection: 'row',
+    backgroundColor: 'rgba(255,255,255,0.12)',
+    borderRadius: 16,
+    padding: 2,
+    borderWidth: 1,
+    borderColor: 'rgba(255,255,255,0.15)',
+  },
+  langBtn: { paddingHorizontal: 10, paddingVertical: 5, borderRadius: 14 },
+  langBtnActive: { backgroundColor: MD3.primary },
+  langText: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.5)' },
+  langTextActive: { color: '#FFF' },
+  headerContent: {
+    flex: 1,
+    justifyContent: 'flex-end',
+    paddingHorizontal: 20,
+    paddingBottom: 20,
+  },
+  headerSubLabel: {
+    fontSize: 12,
+    fontWeight: '600',
+    color: 'rgba(255,255,255,0.6)',
+    letterSpacing: 1,
+    marginBottom: 6,
+    textTransform: 'uppercase',
+  },
+  headerWelcome: { fontSize: 20, fontWeight: '700', color: '#FFF' },
+
+  // 콘텐츠 패널
+  contentWrapper: { flex: 1, marginTop: -28 },
+  whitePanel: {
+    flex: 1,
+    backgroundColor: '#F7FCFF',
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
+    overflow: 'hidden',
+  },
+  dragHandleWrap: { alignItems: 'center', paddingVertical: 10 },
+  dragHandle: { width: 36, height: 4, borderRadius: 2, backgroundColor: '#D0D8E4' },
+  scroll: { flex: 1 },
+
+  // 섹션 공통
+  section: { marginBottom: 28, paddingHorizontal: 16 },
+  sectionHeaderRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 12,
+  },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: MD3.onSurface },
+  seeAllText: { fontSize: 13, color: MD3.primary, fontWeight: '600' },
+
+  // ① 주차
+  parkingCard: { overflow: 'hidden' },
+  parkingTop: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    padding: 16,
+    gap: 12,
+  },
+  parkingIconBox: {
+    width: 50, height: 50, borderRadius: 16,
+    backgroundColor: MD3.primaryContainer,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  parkingName: { fontSize: 15, fontWeight: '700', color: MD3.onSurface },
+  parkingHint: { fontSize: 12, color: MD3.onSurfaceVariant, marginTop: 2 },
+  parkingBadge: {
+    flexDirection: 'row', alignItems: 'center', gap: 4,
+    paddingHorizontal: 10, paddingVertical: 5, borderRadius: 20,
+  },
+  parkingBadgeText: { fontSize: 13, fontWeight: '700' },
+  rateBarWrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 16,
+    marginBottom: 8,
+    gap: 10,
+  },
+  rateBarBg: {
+    flex: 1, height: 8, borderRadius: 4,
+    backgroundColor: MD3.surfaceVariant, overflow: 'hidden',
+  },
+  rateBarFill: { height: '100%', borderRadius: 4 },
+  rateLabel: { fontSize: 13, fontWeight: '700', color: MD3.onSurface, width: 36 },
+  parkingMsg: {
+    fontSize: 13,
+    color: MD3.onSurfaceVariant,
+    paddingHorizontal: 16,
+    paddingBottom: 16,
+    lineHeight: 19,
+  },
+
+  // ② 코엑스
+  listCard: { overflow: 'hidden', marginBottom: 10 },
+  eventRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    paddingHorizontal: 14,
+    paddingVertical: 12,
+    gap: 12,
+  },
+  rowDivider: { borderBottomWidth: 1, borderBottomColor: MD3.outlineVariant },
+  eventDateBox: {
+    backgroundColor: MD3.primaryContainer,
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 6,
+    minWidth: 52, alignItems: 'center',
+  },
+  eventHall: { fontSize: 12, fontWeight: '700', color: MD3.primary },
+  eventTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurface },
+  eventDate: { fontSize: 12, color: MD3.onSurfaceVariant },
+  outLinkBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    paddingVertical: 12,
+    borderRadius: 12,
+    borderWidth: 1.5,
+    borderColor: MD3.primary,
+    backgroundColor: MD3.primaryContainer,
+  },
+  outLinkBtnText: { fontSize: 14, fontWeight: '700', color: MD3.primary },
+
+  // ③ 식당
+  diningCard: { overflow: 'hidden' },
+  diningGradient: { padding: 18 },
+  diningIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  diningIconBox: {
+    width: 52, height: 52, borderRadius: 16,
+    backgroundColor: '#FDEBD0',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  diningBadge: {
+    backgroundColor: '#FFF',
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#F5C98A',
+  },
+  diningBadgeText: { fontSize: 12, fontWeight: '700', color: '#E07B39' },
+  diningDesc: {
+    fontSize: 14,
+    color: '#7A4A1E',
+    lineHeight: 21,
+    marginBottom: 14,
+  },
+  diningBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#F5C98A',
+  },
+  diningBtnText: { fontSize: 13, fontWeight: '700', color: '#E07B39' },
+
+  // ④ 교통
+  travelGrid: { gap: 12 },
+  travelCard: { overflow: 'hidden' },
+  travelCardInner: { padding: 16 },
+  travelIconBox: {
+    width: 50, height: 50, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 12,
+  },
+  travelCardTitle: { fontSize: 15, fontWeight: '700', color: MD3.onSurface, marginBottom: 6 },
+  travelCardDesc: { fontSize: 13, color: MD3.onSurfaceVariant, lineHeight: 19, marginBottom: 14 },
+  travelBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    alignSelf: 'flex-start',
+    borderRadius: 8,
+    paddingHorizontal: 12,
+    paddingVertical: 7,
+    borderWidth: 1.5,
+    backgroundColor: '#FFF',
+  },
+  travelBtnText: { fontSize: 13, fontWeight: '700' },
+
+  // ⑤ 편의시설
+  amenitiesGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 10,
+  },
+  amenityCard: {
+    width: (width - 32 - 10) / 2,
+    padding: 14,
+  },
+  amenityIconBox: {
+    width: 44, height: 44, borderRadius: 14,
+    backgroundColor: MD3.primaryContainer,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 10,
+  },
+  amenityTitle: { fontSize: 13, fontWeight: '700', color: MD3.onSurface, marginBottom: 5 },
+  amenityDesc: { fontSize: 12, color: MD3.onSurfaceVariant, lineHeight: 17 },
+
+  // ⑥ K-컬처
+  attractionsScroll: { paddingHorizontal: 16, gap: 12 },
+  attractionCard: { width: 130, alignItems: 'flex-start' },
+  attractionImgBox: {
+    width: 130, height: 100, borderRadius: 16,
+    alignItems: 'center', justifyContent: 'center',
+    marginBottom: 8,
+  },
+  attractionCategoryBadge: {
+    backgroundColor: MD3.primaryContainer,
+    borderRadius: 6,
+    paddingHorizontal: 8, paddingVertical: 3,
+    marginBottom: 5,
+  },
+  attractionCategoryText: { fontSize: 10, fontWeight: '700', color: MD3.primary },
+  attractionName: { fontSize: 12, fontWeight: '600', color: MD3.onSurface, lineHeight: 17 },
+
+  // 하단 이동 버튼
+  backToGateway: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 6,
+    marginHorizontal: 16,
+    marginTop: 8,
+    paddingVertical: 14,
+    borderRadius: 12,
+    backgroundColor: MD3.surfaceVariant,
+  },
+  backToGatewayText: { fontSize: 13, color: MD3.onSurfaceVariant, fontWeight: '600' },
+});
