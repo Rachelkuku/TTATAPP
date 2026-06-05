@@ -422,7 +422,7 @@ const styles = StyleSheet.create({
 
   // 헤더
   headerBg: {
-    height: Platform.OS === 'ios' ? 220 : 200,
+    height: Platform.OS === 'ios' ? 260 : 240,
     width: '100%',
   },
   headerSafe: { flex: 1 },
@@ -454,7 +454,7 @@ const styles = StyleSheet.create({
   langTextActive: { color: '#FFF' },
   headerContent: {
     flex: 1,
-    justifyContent: 'flex-end',
+    justifyContent: 'center',
     paddingHorizontal: 20,
     paddingBottom: 20,
   },
