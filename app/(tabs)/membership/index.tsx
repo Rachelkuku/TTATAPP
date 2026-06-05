@@ -183,7 +183,7 @@ export default function MembershipScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A1E3C' },
   headerBg: {
-    height: Platform.OS === 'ios' ? 230 : 210,
+    height: Platform.OS === 'ios' ? 260 : 240,
     width: '100%',
   },
   topBar: {
@@ -204,7 +204,7 @@ const styles = StyleSheet.create({
     width: 225, height: 179,
   },
 
-  contentWrapper: { flex: 1, marginTop: -32 },
+  contentWrapper: { flex: 1, marginTop: -65 },
   whitePanel: {
     flex: 1, backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 32, borderTopRightRadius: 32,

@@ -396,7 +396,7 @@ export default function HomeScreen() {
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: '#0A1E3C' },
   headerBg: {
-    height: Platform.OS === 'ios' ? 230 : 210,
+    height: Platform.OS === 'ios' ? 260 : 240,
     width: '100%',
   },
   topBar: {
@@ -425,7 +425,7 @@ const styles = StyleSheet.create({
   greetingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
   headerCharImg: { width: 225, height: 179, position: 'absolute', right: 0, bottom: -14 },
 
-  contentWrapper: { flex: 1, marginTop: -32 },
+  contentWrapper: { flex: 1, marginTop: -65 },
   whitePanel: {
     flex: 1, backgroundColor: '#FFFFFF',
     borderTopLeftRadius: 32, borderTopRightRadius: 32,
