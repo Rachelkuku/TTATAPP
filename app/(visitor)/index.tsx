@@ -29,11 +29,8 @@ const { width } = Dimensions.get('window');
 const PARKING_RATE = 78;
 const PARKING_STATUS: 'free' | 'busy' | 'full' = 'free';
 
-function openWebView(url: string, title: string) {
-  router.push({
-    pathname: '/webview',
-    params: { url, title },
-  } as any);
+function openWebView(url: string, _title: string) {
+  Linking.openURL(url);
 }
 
 export default function VisitorHomeScreen() {
