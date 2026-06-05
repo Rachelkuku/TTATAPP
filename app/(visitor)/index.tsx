@@ -97,6 +97,7 @@ export default function VisitorHomeScreen() {
 
       {/* ─── 메인 스크롤 ─── */}
       <View style={styles.contentWrapper}>
+        <Image source={mascotImg} style={styles.bottomMascot} resizeMode="contain" />
         <View style={styles.whitePanel}>
           <View style={styles.dragHandleWrap}>
             <View style={styles.dragHandle} />
@@ -479,7 +480,16 @@ const styles = StyleSheet.create({
   headerWelcome: { fontSize: 20, fontWeight: '700', color: '#FFF' },
 
   // 콘텐츠 패널
-  contentWrapper: { flex: 1, marginTop: -28 },
+  contentWrapper: { flex: 1, marginTop: -65 },
+  bottomMascot: {
+    position: 'absolute',
+    width: 90,
+    height: 75,
+    right: 14,
+    bottom: 90,
+    opacity: 0.18,
+    zIndex: 10,
+  },
   whitePanel: {
     flex: 1,
     backgroundColor: '#F7FCFF',
