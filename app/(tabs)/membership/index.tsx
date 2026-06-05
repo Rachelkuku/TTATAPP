@@ -38,7 +38,6 @@ const TABS: { key: FilterTab; label: string; icon: React.ComponentProps<typeof I
 
 const PREMIUM_BENEFITS = [
   { icon: 'cafe', title: '전용 라운지 이용', sub: '프리미엄 라운지 무료 이용' },
-  { icon: 'car', title: '주차 할인', sub: '주차 요금 20% 할인' },
   { icon: 'gift', title: '제휴사 혜택', sub: '다양한 제휴사 할인 혜택 제공' },
   { icon: 'ticket', title: '이벤트 초대', sub: 'VIP 전용 이벤트 초대' },
 ];
