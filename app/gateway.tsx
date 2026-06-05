@@ -127,8 +127,8 @@ export default function GatewayScreen() {
         {/* 하단 서브텍스트 */}
         <Text style={styles.footerText}>
           {lang === 'KR'
-            ? 'WORLD TRADE CENTER SEOUL · 서울특별시 강남구 테헤란로 511'
-            : 'WORLD TRADE CENTER SEOUL · 511 Teheran-ro, Gangnam-gu, Seoul'}
+            ? 'WORLD TRADE CENTER SEOUL · 서울시 강남구 영동대로 511'
+            : 'WORLD TRADE CENTER SEOUL · 511 Yeongdong-daero, Gangnam-gu, Seoul'}
         </Text>
       </SafeAreaView>
     </View>
