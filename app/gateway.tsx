@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -23,8 +23,7 @@ const mascotImg = require('../assets/cacl.png');
 const { width } = Dimensions.get('window');
 
 export default function GatewayScreen() {
-  const [lang, setLang] = useState<Lang>('KR');
-  const { userType, setVisitor } = useAuthStore();
+  const { userType, setVisitor, lang, setLang } = useAuthStore();
   const t = I18N.gateway;
 
   const handleTenant = () => {
@@ -36,14 +35,14 @@ export default function GatewayScreen() {
     }
   };
 
-  const handleVisitor = () => {
-    setVisitor();
+  const handleVisitor = async () => {
+    await setVisitor();
     router.replace('/(visitor)');
   };
 
   return (
     <View style={styles.container}>
-      <StatusBar barStyle="light-content" />
+      <StatusBar barStyle="dark-content" />
 
       {/* 배경 이미지 */}
       <ImageBackground
@@ -53,7 +52,7 @@ export default function GatewayScreen() {
         imageStyle={{ top: -30 }}
       >
         <LinearGradient
-          colors={['rgba(5,15,40,0.55)', 'rgba(10,30,70,0.80)', 'rgba(5,15,40,0.95)']}
+          colors={['rgba(240,249,255,0.85)', 'rgba(224,242,254,0.92)', 'rgba(186,230,253,0.95)']}
           style={StyleSheet.absoluteFill}
         />
       </ImageBackground>
@@ -93,7 +92,7 @@ export default function GatewayScreen() {
           {/* 입주사 임직원 */}
           <TouchableOpacity style={styles.choiceCard} onPress={handleTenant} activeOpacity={0.85}>
             <LinearGradient
-              colors={['rgba(255,255,255,0.18)', 'rgba(255,255,255,0.08)']}
+              colors={['#FFFFFF', '#F8FAFC']}
               style={styles.choiceCardInner}
             >
               <View style={styles.choiceIconBox}>
@@ -103,14 +102,14 @@ export default function GatewayScreen() {
                 <Text style={styles.choiceTitle}>{t.tenantTitle[lang]}</Text>
                 <Text style={styles.choiceSub}>{t.tenantSub[lang]}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={22} color="rgba(255,255,255,0.5)" />
+              <Ionicons name="chevron-forward" size={22} color="rgba(15,23,42,0.35)" />
             </LinearGradient>
           </TouchableOpacity>
 
           {/* 방문객 */}
           <TouchableOpacity style={styles.choiceCard} onPress={handleVisitor} activeOpacity={0.85}>
             <LinearGradient
-              colors={['rgba(74,158,196,0.35)', 'rgba(74,158,196,0.15)']}
+              colors={['#E0F2FE', '#BAE6FD']}
               style={[styles.choiceCardInner, styles.visitorCardInner]}
             >
               <View style={[styles.choiceIconBox, styles.visitorIconBox]}>
@@ -120,7 +119,7 @@ export default function GatewayScreen() {
                 <Text style={[styles.choiceTitle, styles.visitorTitle]}>{t.visitorTitle[lang]}</Text>
                 <Text style={[styles.choiceSub, styles.visitorSub]}>{t.visitorSub[lang]}</Text>
               </View>
-              <Ionicons name="chevron-forward" size={22} color="rgba(255,255,255,0.7)" />
+              <Ionicons name="chevron-forward" size={22} color="#0369A1" />
             </LinearGradient>
           </TouchableOpacity>
         </View>
@@ -137,7 +136,7 @@ export default function GatewayScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#050F28' },
+  container: { flex: 1, backgroundColor: '#E0F2FE' },
   safe: { flex: 1 },
 
   mascot: {
@@ -146,7 +145,7 @@ const styles = StyleSheet.create({
     height: 160,
     right: -10,
     top: Platform.OS === 'ios' ? 80 : 60,
-    opacity: 0.18,
+    opacity: 0.12,
   },
 
   // ── 언어 토글 ───────────────────────────────
@@ -156,11 +155,11 @@ const styles = StyleSheet.create({
     alignSelf: 'flex-end',
     marginTop: Platform.OS === 'ios' ? 12 : 16 + (StatusBar.currentHeight ?? 0),
     marginRight: 20,
-    backgroundColor: 'rgba(255,255,255,0.1)',
+    backgroundColor: 'rgba(15,23,42,0.06)',
     borderRadius: 20,
     padding: 3,
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(15,23,42,0.08)',
   },
   langBtn: {
     paddingHorizontal: 14,
@@ -171,7 +170,7 @@ const styles = StyleSheet.create({
     backgroundColor: MD3.primary,
   },
   langDivider: { width: 0 },
-  langText: { fontSize: 13, fontWeight: '600', color: 'rgba(255,255,255,0.5)' },
+  langText: { fontSize: 13, fontWeight: '600', color: 'rgba(15,23,42,0.4)' },
   langTextActive: { color: '#FFFFFF' },
 
   // ── 타이틀 ──────────────────────────────────
@@ -184,18 +183,18 @@ const styles = StyleSheet.create({
   logoBadge: {
     alignSelf: 'flex-start',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.3)',
+    borderColor: 'rgba(15,23,42,0.15)',
     borderRadius: 8,
     paddingHorizontal: 10,
     paddingVertical: 5,
     marginBottom: 18,
-    backgroundColor: 'rgba(255,255,255,0.08)',
+    backgroundColor: 'rgba(15,23,42,0.05)',
   },
-  logoText: { fontSize: 12, fontWeight: '700', color: 'rgba(255,255,255,0.7)', letterSpacing: 1.5 },
+  logoText: { fontSize: 12, fontWeight: '700', color: '#0F294A', letterSpacing: 1.5 },
   welcomeTitle: {
     fontSize: width > 380 ? 30 : 26,
     fontWeight: '800',
-    color: '#FFFFFF',
+    color: '#0F172A',
     lineHeight: width > 380 ? 42 : 36,
     letterSpacing: -0.3,
   },
@@ -210,7 +209,18 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     overflow: 'hidden',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(15,23,42,0.08)',
+    ...Platform.select({
+      ios: {
+        shadowColor: '#0F172A',
+        shadowOffset: { width: 0, height: 4 },
+        shadowOpacity: 0.06,
+        shadowRadius: 10,
+      },
+      android: {
+        elevation: 3,
+      },
+    }),
   },
   choiceCardInner: {
     flexDirection: 'row',
@@ -226,11 +236,11 @@ const styles = StyleSheet.create({
     width: 54,
     height: 54,
     borderRadius: 17,
-    backgroundColor: 'rgba(255,255,255,0.12)',
+    backgroundColor: 'rgba(15,23,42,0.04)',
     alignItems: 'center',
     justifyContent: 'center',
     borderWidth: 1,
-    borderColor: 'rgba(255,255,255,0.15)',
+    borderColor: 'rgba(15,23,42,0.06)',
   },
   visitorIconBox: {
     backgroundColor: MD3.primary,
@@ -240,21 +250,21 @@ const styles = StyleSheet.create({
   choiceTitle: {
     fontSize: 17,
     fontWeight: '700',
-    color: '#FFFFFF',
+    color: '#0F172A',
     marginBottom: 5,
   },
-  visitorTitle: { color: '#FFFFFF' },
+  visitorTitle: { color: '#0369A1' },
   choiceSub: {
     fontSize: 12,
-    color: 'rgba(255,255,255,0.55)',
+    color: 'rgba(15,23,42,0.5)',
     lineHeight: 17,
   },
-  visitorSub: { color: 'rgba(255,255,255,0.75)' },
+  visitorSub: { color: '#075985' },
 
   // ── 푸터 ─────────────────────────────────────
   footerText: {
     fontSize: 10,
-    color: 'rgba(255,255,255,0.3)',
+    color: 'rgba(15,23,42,0.4)',
     textAlign: 'center',
     marginBottom: Platform.OS === 'ios' ? 8 : 16,
     paddingHorizontal: 20,

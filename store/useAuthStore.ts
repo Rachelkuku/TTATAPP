@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { User } from '../types';
+import { Lang } from '../constants/i18n';
 
 export type UserType = 'tenant' | 'visitor' | null;
 
@@ -9,11 +10,13 @@ interface AuthState {
   isLoggedIn: boolean;
   isLoading: boolean;
   userType: UserType;
+  lang: Lang;
   hydrated: boolean;
   hydrate: () => Promise<void>;
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  setVisitor: () => void;
+  setVisitor: () => Promise<void>;
+  setLang: (lang: Lang) => Promise<void>;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
@@ -21,14 +24,19 @@ export const useAuthStore = create<AuthState>((set) => ({
   isLoggedIn: false,
   isLoading: false,
   userType: null,
+  lang: 'KR',
   hydrated: false,
 
-  // 앱 시작 시 AsyncStorage에서 userType 복원
+  // 앱 시작 시 AsyncStorage에서 userType 및 language 복원
   hydrate: async () => {
     try {
-      const stored = await AsyncStorage.getItem('userType');
-      const userType = (stored as UserType) ?? null;
-      set({ userType, hydrated: true });
+      const [storedUserType, storedLang] = await Promise.all([
+        AsyncStorage.getItem('userType'),
+        AsyncStorage.getItem('language'),
+      ]);
+      const userType = (storedUserType as UserType) ?? null;
+      const lang = (storedLang as Lang) ?? 'KR';
+      set({ userType, lang, hydrated: true });
     } catch {
       set({ hydrated: true });
     }
@@ -55,8 +63,14 @@ export const useAuthStore = create<AuthState>((set) => ({
     });
   },
 
-  setVisitor: () => {
+  setVisitor: async () => {
+    await AsyncStorage.setItem('userType', 'visitor');
     set({ userType: 'visitor' });
+  },
+
+  setLang: async (lang: Lang) => {
+    await AsyncStorage.setItem('language', lang);
+    set({ lang });
   },
 
   logout: async () => {

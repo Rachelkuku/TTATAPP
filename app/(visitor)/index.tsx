@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React from 'react';
 import {
   View,
   Text,
@@ -9,6 +9,7 @@ import {
   Platform,
   StatusBar,
   ImageBackground,
+  Image,
   Linking,
   Dimensions,
 } from 'react-native';
@@ -21,6 +22,7 @@ import { M3Card } from '../../components/common/M3Card';
 import { useAuthStore } from '../../store/useAuthStore';
 
 const bgWtc = require('../../assets/bg_wtc.jpg');
+const coexMap = require('../../assets/coex_map.png');
 const { width } = Dimensions.get('window');
 
 // 주차율 (고정 목업 데이터)
@@ -35,8 +37,7 @@ function openWebView(url: string, title: string) {
 }
 
 export default function VisitorHomeScreen() {
-  const [lang, setLang] = useState<Lang>('KR');
-  const { logout } = useAuthStore();
+  const { logout, lang, setLang } = useAuthStore();
   const t = I18N.visitor;
 
   const parkingColor = PARKING_STATUS === 'free' ? '#22C55E' : PARKING_STATUS === 'busy' ? '#F59E0B' : '#EF4444';
@@ -181,7 +182,24 @@ export default function VisitorHomeScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* ③ 스타필드 식당 안내 */}
+            {/* ③ 실내 길찾기 */}
+            <View style={styles.section}>
+              <View style={[styles.sectionHeaderRow, { justifyContent: 'space-between' }]}>
+                <Text style={styles.sectionTitle}>{t.indoorMapTitle[lang]}</Text>
+                <View style={styles.prototypeBadge}>
+                  <Text style={styles.prototypeBadgeText}>{t.indoorMapBadge[lang]}</Text>
+                </View>
+              </View>
+              <M3Card variant="outlined" style={styles.mapCard}>
+                <Image source={coexMap} style={styles.mapImage} resizeMode="contain" />
+                <View style={styles.mapFooter}>
+                  <Ionicons name="time-outline" size={13} color={MD3.onSurfaceVariant} />
+                  <Text style={styles.mapFooterText}>{t.indoorMapDesc[lang]}</Text>
+                </View>
+              </M3Card>
+            </View>
+
+            {/* ④ 스타필드 식당 안내 */}
             <View style={styles.section}>
               <SectionHeader title={t.diningTitle[lang]} />
               <M3Card variant="elevated" style={styles.diningCard}>
@@ -209,7 +227,32 @@ export default function VisitorHomeScreen() {
               </M3Card>
             </View>
 
-            {/* ④ 교통 편의 서비스 */}
+            {/* ⑤ 별마당 도서관 초대행사 */}
+            <View style={styles.section}>
+              <SectionHeader title={t.libraryEventTitle[lang]} />
+              <M3Card variant="elevated" style={styles.libraryCard}>
+                <LinearGradient colors={['#F5F3FF', '#EDE9FE']} style={styles.libraryGradient}>
+                  <View style={styles.libraryIconRow}>
+                    <View style={styles.libraryIconBox}>
+                      <Ionicons name="book-outline" size={28} color="#7C3AED" />
+                    </View>
+                    <View style={styles.libraryBadge}>
+                      <Text style={styles.libraryBadgeText}>Starfield Library</Text>
+                    </View>
+                  </View>
+                  <Text style={styles.libraryDesc}>{t.libraryEventDesc[lang]}</Text>
+                  <TouchableOpacity
+                    style={styles.libraryBtn}
+                    onPress={() => openWebView(EXTERNAL_URLS.starfieldLibrary, lang === 'KR' ? '별마당 도서관 행사' : 'Starfield Library Events')}
+                  >
+                    <Text style={styles.libraryBtnText}>{t.libraryEventBtn[lang]}</Text>
+                    <Ionicons name="arrow-forward" size={15} color="#7C3AED" />
+                  </TouchableOpacity>
+                </LinearGradient>
+              </M3Card>
+            </View>
+
+            {/* ⑥ 교통 편의 서비스 */}
             <View style={styles.section}>
               <SectionHeader title={t.travelTitle[lang]} />
               <View style={styles.travelGrid}>
@@ -251,7 +294,7 @@ export default function VisitorHomeScreen() {
               </View>
             </View>
 
-            {/* ⑤ 편의시설 & 접근성 */}
+            {/* ⑦ 편의시설 & 접근성 */}
             <View style={styles.section}>
               <SectionHeader title={t.amenitiesTitle[lang]} />
               <View style={styles.amenitiesGrid}>
@@ -270,7 +313,7 @@ export default function VisitorHomeScreen() {
               </View>
             </View>
 
-            {/* ⑥ K-컬처 명소 */}
+            {/* ⑧ K-컬처 명소 */}
             <View style={[styles.section, { paddingHorizontal: 0 }]}>
               <View style={{ paddingHorizontal: 16 }}>
                 <SectionHeader title={t.attractionsTitle[lang]} />
@@ -281,7 +324,17 @@ export default function VisitorHomeScreen() {
                 contentContainerStyle={styles.attractionsScroll}
               >
                 {t.attractions.map((item, idx) => (
-                  <View key={idx} style={styles.attractionCard}>
+                  <TouchableOpacity
+                    key={idx}
+                    style={styles.attractionCard}
+                    activeOpacity={0.85}
+                    onPress={() => {
+                      router.push({
+                        pathname: '/(visitor)/attraction',
+                        params: { id: item.id }
+                      });
+                    }}
+                  >
                     <LinearGradient
                       colors={getAttractionGradient(idx)}
                       style={styles.attractionImgBox}
@@ -294,7 +347,7 @@ export default function VisitorHomeScreen() {
                     <Text style={styles.attractionName} numberOfLines={2}>
                       {lang === 'KR' ? item.KR : item.EN}
                     </Text>
-                  </View>
+                  </TouchableOpacity>
                 ))}
               </ScrollView>
             </View>
@@ -482,6 +535,30 @@ const styles = StyleSheet.create({
     lineHeight: 19,
   },
 
+  // ③ 실내 길찾기
+  prototypeBadge: {
+    backgroundColor: '#FEF3C7',
+    borderRadius: 8,
+    paddingHorizontal: 8,
+    paddingVertical: 4,
+    borderWidth: 1,
+    borderColor: '#FCD34D',
+  },
+  prototypeBadgeText: { fontSize: 11, fontWeight: '700', color: '#92400E' },
+  mapCard: { overflow: 'hidden' },
+  mapImage: { width: '100%', height: 210, backgroundColor: '#F1F5F9' },
+  mapFooter: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 5,
+    paddingHorizontal: 14,
+    paddingVertical: 10,
+    backgroundColor: '#F8FAFC',
+    borderTopWidth: 1,
+    borderTopColor: '#E2E8F0',
+  },
+  mapFooterText: { fontSize: 12, color: MD3.onSurfaceVariant },
+
   // ② 코엑스
   listCard: { overflow: 'hidden', marginBottom: 10 },
   eventRow: {
@@ -553,7 +630,42 @@ const styles = StyleSheet.create({
   },
   diningBtnText: { fontSize: 13, fontWeight: '700', color: '#E07B39' },
 
-  // ④ 교통
+  // ⑤ 별마당 도서관
+  libraryCard: { overflow: 'hidden' },
+  libraryGradient: { padding: 18 },
+  libraryIconRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 12,
+    marginBottom: 14,
+  },
+  libraryIconBox: {
+    width: 52, height: 52, borderRadius: 16,
+    backgroundColor: '#EDE9FE',
+    alignItems: 'center', justifyContent: 'center',
+  },
+  libraryBadge: {
+    backgroundColor: '#FFF',
+    borderRadius: 8, paddingHorizontal: 10, paddingVertical: 5,
+    borderWidth: 1, borderColor: '#C4B5FD',
+  },
+  libraryBadgeText: { fontSize: 12, fontWeight: '700', color: '#7C3AED' },
+  libraryDesc: { fontSize: 14, color: '#4C1D95', lineHeight: 21, marginBottom: 14 },
+  libraryBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 6,
+    alignSelf: 'flex-start',
+    backgroundColor: '#FFF',
+    borderRadius: 10,
+    paddingHorizontal: 14,
+    paddingVertical: 8,
+    borderWidth: 1,
+    borderColor: '#C4B5FD',
+  },
+  libraryBtnText: { fontSize: 13, fontWeight: '700', color: '#7C3AED' },
+
+  // ⑥ 교통
   travelGrid: { gap: 12 },
   travelCard: { overflow: 'hidden' },
   travelCardInner: { padding: 16 },
