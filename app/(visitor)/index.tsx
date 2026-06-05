@@ -23,6 +23,7 @@ import { useAuthStore } from '../../store/useAuthStore';
 
 const bgWtc = require('../../assets/bg_wtc.jpg');
 const coexMap = require('../../assets/coex_map.png');
+const mascotImg = require('../../assets/cacl.png');
 const { width } = Dimensions.get('window');
 
 // 주차율 (고정 목업 데이터)
@@ -59,6 +60,7 @@ export default function VisitorHomeScreen() {
           colors={['rgba(0,10,40,0.5)', 'rgba(10,30,70,0.1)']}
           style={StyleSheet.absoluteFill}
         />
+        <Image source={mascotImg} style={styles.headerMascot} resizeMode="contain" />
         <SafeAreaView style={styles.headerSafe}>
           {/* 상단바 */}
           <View style={styles.topBar}>
@@ -424,6 +426,14 @@ const styles = StyleSheet.create({
   headerBg: {
     height: Platform.OS === 'ios' ? 260 : 240,
     width: '100%',
+  },
+  headerMascot: {
+    position: 'absolute',
+    width: 180,
+    height: 150,
+    right: -5,
+    bottom: 30,
+    opacity: 0.25,
   },
   headerSafe: { flex: 1 },
   topBar: {
