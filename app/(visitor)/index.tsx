@@ -60,8 +60,8 @@ export default function VisitorHomeScreen() {
           colors={['rgba(0,10,40,0.5)', 'rgba(10,30,70,0.1)']}
           style={StyleSheet.absoluteFill}
         />
-        <Image source={mascotImg} style={styles.headerMascot} resizeMode="contain" />
         <SafeAreaView style={styles.headerSafe}>
+          <Image source={mascotImg} style={styles.headerMascot} resizeMode="contain" />
           {/* 상단바 */}
           <View style={styles.topBar}>
             <TouchableOpacity onPress={() => router.replace('/gateway')} style={styles.backBtn}>
@@ -432,8 +432,8 @@ const styles = StyleSheet.create({
     width: 180,
     height: 150,
     right: -5,
-    bottom: 30,
-    opacity: 0.85,
+    bottom: 20,
+    zIndex: 10,
   },
   headerSafe: { flex: 1 },
   topBar: {
