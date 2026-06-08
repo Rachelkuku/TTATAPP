@@ -6,7 +6,7 @@ export const I18N = {
   gateway: {
     welcome: {
       KR: 'WTC Seoul(무역센터)\n방문을 환영합니다.',
-      EN: 'WTC Seoul(World Trade Center Seoul)\nWelcome!',
+      EN: 'WTC Seoul\nWorld Trade Center Seoul\nWelcome!',
     },
     tenantTitle: { KR: '입주사 임직원이신가요?', EN: 'Tenant Staff' },
     tenantSub: { KR: '입주사 전용 어플 이용', EN: 'Access the tenant-only app' },
