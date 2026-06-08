@@ -67,7 +67,7 @@ export default function VisitorHomeScreen() {
             <TouchableOpacity onPress={() => router.replace('/gateway')} style={styles.backBtn}>
               <Ionicons name="chevron-back" size={22} color="#FFF" />
             </TouchableOpacity>
-            <Text style={styles.headerTitle}>WTCSEOUL</Text>
+            <Text style={styles.headerTitle}>WTC Seoul</Text>
             {/* KR / EN 토글 */}
             <View style={styles.langRow}>
               <TouchableOpacity

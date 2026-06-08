@@ -5,8 +5,8 @@ export const I18N = {
   // ── 게이트웨이 화면 ──────────────────────────────────────────
   gateway: {
     welcome: {
-      KR: '무역센터 (WTCSEOUL)\n방문을 환영합니다.',
-      EN: 'World Trade Center Seoul\nWelcome to WTCSEOUL.',
+      KR: 'WTC Seoul(무역센터)\n방문을 환영합니다.',
+      EN: 'WTC Seoul(World Trade Center Seoul)\nWelcome!',
     },
     tenantTitle: { KR: '입주사 임직원이신가요?', EN: 'Tenant Staff' },
     tenantSub: { KR: '입주사 전용 어플 이용', EN: 'Access the tenant-only app' },
@@ -19,7 +19,7 @@ export const I18N = {
 
   // ── 방문객 메인 헤더 ─────────────────────────────────────────
   visitor: {
-    headerTitle: { KR: 'WTCSEOUL 방문객 안내', EN: 'WTCSEOUL Visitor Guide' },
+    headerTitle: { KR: 'WTC Seoul 방문객 안내', EN: 'WTC Seoul Visitor Guide' },
     headerSub: { KR: '무역센터에 오신 것을 환영합니다', EN: 'Welcome to World Trade Center Seoul' },
 
     // ① 주차
@@ -77,13 +77,13 @@ export const I18N = {
     limoTitle: { KR: '도심공항 리무진 버스', EN: 'Airport Limousine Bus' },
     limoDesc: {
       KR: '인천공항까지 가장 편안하고 빠르게!\n무역센터에서 바로 출발하는 공항 리무진 버스 정보를 확인하세요.',
-      EN: 'The fastest way to Incheon Airport!\nTake the limousine bus directly from WTCSEOUL.',
+      EN: 'The fastest way to Incheon Airport!\nTake the limousine bus directly from WTC Seoul.',
     },
     limoBtn: { KR: '시간표 보기', EN: 'View Schedule' },
     luggageTitle: { KR: 'GOODLUG 짐 배송 서비스', EN: 'GOODLUG Luggage Delivery' },
     luggageDesc: {
       KR: '무거운 캐리어는 당일 공항/호텔로 먼저 보내고,\n무역센터를 빈손으로 가볍게 여행하세요!',
-      EN: 'Deliver your heavy suitcases to the airport/hotel on the same day,\nand enjoy WTCSEOUL hands-free!',
+      EN: 'Deliver your heavy suitcases to the airport/hotel on the same day,\nand enjoy WTC Seoul hands-free!',
     },
     luggageBtn: { KR: '예약하기', EN: 'Book Now' },
 
@@ -164,7 +164,7 @@ export const I18N = {
         location: { KR: '코엑스몰 지하 1층 및 주요 연결 통로', EN: 'B1F Starfield Coex Mall & main passages' },
         desc: {
           KR: "무역센터 내부 통로를 감각적인 디지털 캔버스로 채운 갤러리입니다. 화려한 미디어 아트와 현대 작가들의 다채로운 디지털 시각 예술 작품을 무료로 감상하실 수 있습니다.",
-          EN: "An exhibition gallery filling the hallways of WTCSEOUL with digital canvases. Visitors can enjoy spectacular media art and colorful digital visual artworks by contemporary artists for free."
+          EN: "An exhibition gallery filling the hallways of WTC Seoul with digital canvases. Visitors can enjoy spectacular media art and colorful digital visual artworks by contemporary artists for free."
         }
       },
       {

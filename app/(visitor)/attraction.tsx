@@ -104,7 +104,7 @@ export default function AttractionDetailScreen() {
               <Ionicons name="information-circle" size={20} color="#0369A1" style={{ marginTop: 2 }} />
               <View style={{ flex: 1, gap: 4 }}>
                 <Text style={styles.tipTitle}>
-                  {lang === 'KR' ? 'WTCSEOUL 방문자 꿀팁' : 'Visitor Information'}
+                  {lang === 'KR' ? 'WTC Seoul 방문자 꿀팁' : 'Visitor Information'}
                 </Text>
                 <Text style={styles.tipText}>
                   {lang === 'KR' 
