@@ -17,6 +17,7 @@ import { TopBar } from '../../components/common/TopBar';
 import { M3Card } from '../../components/common/M3Card';
 import { M3Chip } from '../../components/common/M3Chip';
 import { LockNotice } from '../../components/common/LockNotice';
+import { CarFinderIcon } from '../../components/common/CarFinderIcon';
 import { mockNotices, mockCoexEvents, mockParkingInfo } from '../../utils/mockData';
 import { useAuthStore } from '../../store/useAuthStore';
 import { NoticeCategory, ParkingStatus } from '../../types';
@@ -123,9 +124,9 @@ export default function HomeScreen() {
 
             <TouchableOpacity
               style={styles.myCarBtn}
-              onPress={isLoggedIn ? () => Alert.alert('내차찾기', '기존 홈페이지 연동 예정') : goGuest}
+              onPress={isLoggedIn ? () => router.push('/car-finder' as any) : goGuest}
             >
-              <Ionicons name="search" size={14} color={MD3.onSurfaceVariant} />
+              <CarFinderIcon size={14} color={MD3.onSurfaceVariant} />
               <Text style={styles.myCarBtnText}>내차찾기</Text>
               {!isLoggedIn && <Ionicons name="lock-closed" size={12} color={MD3.onSurfaceVariant} />}
             </TouchableOpacity>

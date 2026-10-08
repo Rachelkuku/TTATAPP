@@ -1,5 +1,6 @@
 import React from 'react';
 import { View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Alert } from 'react-native';
+import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MD3, Tokens } from '../../../constants/colors';
 import { TopBar } from '../../../components/common/TopBar';
@@ -13,6 +14,7 @@ interface ServiceItem {
   icon: IconName;
   comingSoon?: boolean;
   memberOnly?: boolean;
+  onPress?: () => void;
 }
 
 const APPLY_ITEMS: ServiceItem[] = [
@@ -23,7 +25,7 @@ const APPLY_ITEMS: ServiceItem[] = [
 ];
 
 const MOVE_ITEMS: ServiceItem[] = [
-  { label: '내차찾기', icon: 'search-outline', comingSoon: true, memberOnly: true },
+  { label: '내차찾기', icon: 'search-outline', memberOnly: true, onPress: () => router.push('/car-finder' as any) },
   { label: '할인주차권', icon: 'pricetag-outline', comingSoon: true },
   { label: '실내 길찾기', icon: 'navigate-outline' },
 ];
@@ -72,6 +74,10 @@ export default function ServiceScreen() {
     }
     if (item.memberOnly && !isLoggedIn) {
       Alert.alert('로그인 필요', '입주사 로그인 후 이용하실 수 있습니다.');
+      return;
+    }
+    if (item.onPress) {
+      item.onPress();
       return;
     }
     Alert.alert(item.label, '기존 홈페이지 API 연동 예정');

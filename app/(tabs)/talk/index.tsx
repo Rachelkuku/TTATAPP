@@ -11,7 +11,7 @@ import { useAuthStore } from '../../../store/useAuthStore';
 type IconName = React.ComponentProps<typeof Ionicons>['name'];
 
 const REPORT_BUTTONS: { label: string; icon: IconName; onPress: () => void }[] = [
-  { label: '사진으로\n안전신고', icon: 'camera-outline', onPress: () => Alert.alert('사진으로 안전신고', '사진 첨부 신고 화면 예정') },
+  { label: '사진으로\n안전신고', icon: 'camera-outline', onPress: () => router.push('/safety' as any) },
   { label: '카카오톡\n상담', icon: 'chatbubble-ellipses-outline', onPress: () => Linking.openURL('https://pf.kakao.com/_xjxocaT') },
   { label: '전화\n상담', icon: 'call-outline', onPress: () => Linking.openURL('tel:02-6000-0114') },
 ];
