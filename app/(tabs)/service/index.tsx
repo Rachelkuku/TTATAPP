@@ -22,6 +22,12 @@ const APPLY_ITEMS: ServiceItem[] = [
   { label: '임시정차 신청', icon: 'car-outline' },
   { label: '추가 냉난방 신청', icon: 'thermometer-outline' },
   { label: '화물EV 신청', icon: 'arrow-up-circle-outline' },
+  { label: '웰컴이미지 신청', icon: 'desktop-outline', comingSoon: true },
+  {
+    label: '공사·작업 신청',
+    icon: 'hammer-outline',
+    onPress: () => Alert.alert('공사·작업 신청', '절차 · 구비서류 · 작업 가능 시간 안내 후 신청이 접수됩니다.'),
+  },
 ];
 
 const MOVE_ITEMS: ServiceItem[] = [
@@ -41,6 +47,12 @@ const TRIP_ITEMS: ServiceItem[] = [
   { label: '굿럭 (짐 배송)', icon: 'briefcase-outline' },
 ];
 
+// 위 4개 그룹에 아직 없는 서비스만 모음 (메뉴 구조화 문서 기준)
+const MORE_ITEMS: ServiceItem[] = [
+  { label: '쿠폰함', icon: 'wallet-outline', comingSoon: true, memberOnly: true },
+  { label: '스타필드몰 F&B 이용 스탬프', icon: 'cafe-outline', comingSoon: true, memberOnly: true },
+];
+
 function ItemGrid({ items, isLoggedIn, onItem }: { items: ServiceItem[]; isLoggedIn: boolean; onItem: (i: ServiceItem) => void }) {
   return (
     <View style={styles.grid}>
@@ -57,6 +69,34 @@ function ItemGrid({ items, isLoggedIn, onItem }: { items: ServiceItem[]; isLogge
                 <Text style={styles.soonBadgeText}>곧 오픈</Text>
               </View>
             )}
+          </TouchableOpacity>
+        );
+      })}
+    </View>
+  );
+}
+
+function ItemRowList({ items, isLoggedIn, onItem }: { items: ServiceItem[]; isLoggedIn: boolean; onItem: (i: ServiceItem) => void }) {
+  return (
+    <View>
+      {items.map((item, idx) => {
+        const locked = item.memberOnly && !isLoggedIn;
+        return (
+          <TouchableOpacity
+            key={item.label}
+            style={[styles.listRow, idx > 0 && styles.listDivider]}
+            onPress={() => onItem(item)}
+          >
+            <View style={[styles.listIcon, locked && styles.gridIconLocked]}>
+              <Ionicons name={item.icon} size={18} color={locked ? MD3.onSurfaceVariant : MD3.primary} />
+            </View>
+            <Text style={styles.listLabel}>{item.label}</Text>
+            {item.comingSoon && (
+              <View style={styles.soonBadge}>
+                <Text style={styles.soonBadgeText}>곧 오픈</Text>
+              </View>
+            )}
+            <Ionicons name="chevron-forward" size={16} color={MD3.onSurfaceVariant} />
           </TouchableOpacity>
         );
       })}
@@ -103,16 +143,6 @@ export default function ServiceScreen() {
             )}
           </View>
           <ItemGrid items={APPLY_ITEMS} isLoggedIn={isLoggedIn} onItem={handleItem} />
-          <TouchableOpacity
-            style={styles.soonRow}
-            onPress={() => Alert.alert('웰컴이미지 신청', '곧 오픈 예정입니다.')}
-          >
-            <Ionicons name="desktop-outline" size={18} color={MD3.onSurfaceVariant} />
-            <Text style={styles.soonRowText}>웰컴이미지 신청</Text>
-            <View style={styles.soonBadge}>
-              <Text style={styles.soonBadgeText}>곧 오픈</Text>
-            </View>
-          </TouchableOpacity>
         </M3Card>
 
         {/* 이동 */}
@@ -131,6 +161,12 @@ export default function ServiceScreen() {
         <M3Card variant="outlined" style={styles.section}>
           <Text style={styles.sectionTitle}>출장·이동</Text>
           <ItemGrid items={TRIP_ITEMS} isLoggedIn={isLoggedIn} onItem={handleItem} />
+        </M3Card>
+
+        {/* 전체서비스 — 위 4개 그룹에 없는 서비스만 추가로 */}
+        <M3Card variant="outlined" style={[styles.section, { padding: 0, paddingTop: 16 }]}>
+          <Text style={[styles.sectionTitle, { paddingHorizontal: 16 }]}>전체서비스</Text>
+          <ItemRowList items={MORE_ITEMS} isLoggedIn={isLoggedIn} onItem={handleItem} />
         </M3Card>
       </ScrollView>
     </SafeAreaView>
@@ -162,9 +198,11 @@ const styles = StyleSheet.create({
   soonBadge: { backgroundColor: MD3.tertiaryContainer, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 3, alignSelf: 'flex-start' },
   soonBadgeText: { fontSize: 10, fontWeight: '700', color: MD3.onTertiaryContainer },
 
-  soonRow: {
-    flexDirection: 'row', alignItems: 'center', gap: 10,
-    borderTopWidth: 1, borderTopColor: Tokens.divider, paddingTop: 14, minHeight: Tokens.minTouch,
+  listRow: { flexDirection: 'row', alignItems: 'center', gap: 12, padding: 16, minHeight: Tokens.minTouch },
+  listDivider: { borderTopWidth: 1, borderTopColor: Tokens.divider },
+  listIcon: {
+    width: 36, height: 36, borderRadius: 12, backgroundColor: MD3.primaryContainer,
+    alignItems: 'center', justifyContent: 'center',
   },
-  soonRowText: { flex: 1, fontSize: 14, color: Tokens.text },
+  listLabel: { flex: 1, fontSize: 14, fontWeight: '600', color: Tokens.text },
 });

@@ -74,7 +74,7 @@ export default function TabLayout() {
         name="notice/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="warning" outlineName="warning-outline" label="공사·점검" focused={focused} />
+            <NavItem name="warning" outlineName="warning-outline" label="공지" focused={focused} />
           ),
         }}
       />

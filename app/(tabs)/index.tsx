@@ -54,12 +54,11 @@ function QRView({ value, size = 180 }: { value: string; size?: number }) {
 }
 
 const NOTICE_TONE: Record<NoticeCategory, { fg: string; bg: string; label: string }> = {
-  urgent: { ...Tokens.red, label: '긴급' },
   construction: { ...Tokens.orange, label: '공사' },
-  outage: { ...Tokens.skyOutage, label: '단수·정전' },
-  parking: { ...Tokens.coolParking, label: '주차혼잡' },
-  operations: { ...Tokens.slate, label: '운영' },
-  event: { ...Tokens.blue, label: '행사' },
+  inspection: { ...Tokens.skyOutage, label: '점검' },
+  parking: { ...Tokens.coolParking, label: '주차·동선' },
+  event: { ...Tokens.blue, label: '이벤트' },
+  operations: { ...Tokens.slate, label: '운영·기타' },
 };
 
 const PARKING_LABEL: Record<ParkingStatus, string> = {
@@ -67,7 +66,7 @@ const PARKING_LABEL: Record<ParkingStatus, string> = {
 };
 
 const QUICK_MENUS = [
-  { label: '공사·점검', icon: 'warning-outline' as const, onPress: () => router.push('/(tabs)/notice' as any) },
+  { label: '공지', icon: 'warning-outline' as const, onPress: () => router.push('/(tabs)/notice' as any) },
   { label: '주차', icon: 'car-outline' as const, onPress: () => router.push('/(tabs)/service' as any) },
   { label: '냉난방', icon: 'thermometer-outline' as const, memberOnly: true, onPress: () => router.push('/(tabs)/service' as any) },
   { label: '할인', icon: 'pricetag-outline' as const, onPress: () => router.push('/(tabs)/benefit' as any) },
@@ -75,7 +74,7 @@ const QUICK_MENUS = [
 ];
 
 const NEWS_TABS: { key: string; label: string; categories: NoticeCategory[] }[] = [
-  { key: 'construction', label: '공사·점검', categories: ['construction', 'outage', 'parking'] },
+  { key: 'construction', label: '공지', categories: ['construction', 'inspection', 'parking'] },
   { key: 'event', label: '행사·혜택', categories: ['event'] },
   { key: 'operations', label: '운영', categories: ['operations'] },
 ];
@@ -83,7 +82,7 @@ const NEWS_TABS: { key: string; label: string; categories: NoticeCategory[] }[] 
 export default function HomeScreen() {
   const { isLoggedIn } = useAuthStore();
   const parking = mockParkingInfo;
-  const urgentNotice = mockNotices.find((n) => n.category === 'urgent');
+  const urgentNotice = mockNotices.find((n) => n.isUrgent);
   const [newsTab, setNewsTab] = useState(NEWS_TABS[0].key);
 
   const newsList = useMemo(() => {

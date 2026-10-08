@@ -10,14 +10,17 @@ import {
 } from 'react-native';
 import { useLocalSearchParams, router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import { MD3 } from '../../constants/colors';
+import { MD3, Tokens } from '../../constants/colors';
 import { M3Button } from '../../components/common/M3Button';
 import { mockNotices } from '../../utils/mockData';
+import { NoticeCategory } from '../../types';
 
-const CAT_META: Record<string, { label: string; color: string; bg: string }> = {
-  operations: { label: '운영공지', color: MD3.primary, bg: MD3.primaryContainer },
-  construction: { label: '공사·점검공지', color: MD3.warning, bg: MD3.secondaryContainer },
-  urgent: { label: '긴급공지', color: MD3.error, bg: MD3.errorContainer },
+const CAT_META: Record<NoticeCategory, { label: string; color: string; bg: string }> = {
+  construction: { label: '공사', color: Tokens.orange.fg, bg: Tokens.orange.bg },
+  inspection: { label: '점검', color: Tokens.skyOutage.fg, bg: Tokens.skyOutage.bg },
+  parking: { label: '주차·동선', color: Tokens.coolParking.fg, bg: Tokens.coolParking.bg },
+  event: { label: '이벤트', color: Tokens.blue.fg, bg: Tokens.blue.bg },
+  operations: { label: '운영·기타', color: Tokens.slate.fg, bg: Tokens.slate.bg },
 };
 
 export default function NoticeDetailScreen() {

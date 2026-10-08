@@ -1,9 +1,11 @@
 import React from 'react';
-import { View, Text, TouchableOpacity, StyleSheet, Platform, StatusBar as RNStatusBar } from 'react-native';
+import { View, Text, TouchableOpacity, Image, StyleSheet, Platform, StatusBar as RNStatusBar } from 'react-native';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { MD3, Tokens } from '../../constants/colors';
 import { useAuthStore } from '../../store/useAuthStore';
+
+const mascotLogo = require('../../assets/mascot2_clean.png');
 
 // 공통 상단바 — 좌: 로고, 우: 알림 벨 + 프로필/로그인
 // 알림 벨은 공사·점검 탭으로 이동(스펙 §7: 알림 화면 위치 미정, 임시 매핑)
@@ -20,10 +22,8 @@ export const TopBar: React.FC<{ onBack?: () => void }> = ({ onBack }) => {
             </TouchableOpacity>
           ) : (
             <>
-              <View style={styles.logoTile}>
-                <Ionicons name="business" size={16} color="#FFFFFF" />
-              </View>
-              <Text style={styles.logoText}>무역센터</Text>
+              <Image source={mascotLogo} style={styles.logoImg} resizeMode="contain" />
+              <Text style={styles.logoText} numberOfLines={1}>무역센터 입주사 앱</Text>
             </>
           )}
         </View>
@@ -66,7 +66,7 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     backgroundColor: Tokens.bg,
   },
-  left: { flexDirection: 'row', alignItems: 'center', gap: 8, minHeight: Tokens.minTouch },
+  left: { flexDirection: 'row', alignItems: 'center', gap: 6, minHeight: Tokens.minTouch, flexShrink: 1 },
   backBtn: {
     width: Tokens.minTouch,
     height: Tokens.minTouch,
@@ -74,15 +74,8 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     justifyContent: 'center',
   },
-  logoTile: {
-    width: 28,
-    height: 28,
-    borderRadius: 8,
-    backgroundColor: MD3.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  logoText: { fontSize: 17, fontWeight: '700', color: Tokens.text },
+  logoImg: { width: 40, height: 32 },
+  logoText: { fontSize: 15, fontWeight: '700', color: Tokens.text, flexShrink: 1 },
   right: { flexDirection: 'row', alignItems: 'center', gap: 4 },
   iconBtn: {
     width: Tokens.minTouch,

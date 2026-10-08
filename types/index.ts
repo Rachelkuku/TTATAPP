@@ -12,12 +12,11 @@ export interface User {
 }
 
 export type NoticeCategory =
-  | 'urgent'
-  | 'construction'
-  | 'outage'
-  | 'parking'
-  | 'operations'
-  | 'event';
+  | 'construction'  // 공사: 인테리어·보수 공사, 소음·분진·냄새 작업, 공용부 공사
+  | 'inspection'    // 점검: 단수·정전, 엘리베이터, 공조·냉난방, 소방·전기 설비 점검
+  | 'parking'       // 주차·동선: 주차 혼잡, 전시 연계 혼잡, 출입구·통로 차단, 우회 동선
+  | 'event'         // 이벤트: 입주사 행사, 코엑스 전시, 별마당 행사, 제휴 혜택
+  | 'operations';   // 운영·기타: 운영시간, 이용 규정, 청소·방역, 신청 마감, 관리 안내
 
 export interface Notice {
   id: string;
