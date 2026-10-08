@@ -82,29 +82,31 @@ export default function GatewayScreen() {
         <View style={styles.titleArea}>
           {/* WTC 로고 배지 */}
           <View style={styles.logoBadge}>
-            <Text style={styles.logoText}>WTC SEOUL</Text>
+            <Text style={styles.logoText}>WTC Seoul</Text>
           </View>
           <Text style={styles.welcomeTitle}>{t.welcome[lang]}</Text>
         </View>
 
         {/* 분기 버튼 영역 */}
         <View style={styles.cardsArea}>
-          {/* 입주사 임직원 */}
-          <TouchableOpacity style={styles.choiceCard} onPress={handleTenant} activeOpacity={0.85}>
-            <LinearGradient
-              colors={['#FFFFFF', '#F8FAFC']}
-              style={styles.choiceCardInner}
-            >
-              <View style={styles.choiceIconBox}>
-                <Ionicons name="business-outline" size={30} color={MD3.primary} />
-              </View>
-              <View style={styles.choiceTextBox}>
-                <Text style={styles.choiceTitle}>{t.tenantTitle[lang]}</Text>
-                <Text style={styles.choiceSub}>{t.tenantSub[lang]}</Text>
-              </View>
-              <Ionicons name="chevron-forward" size={22} color="rgba(15,23,42,0.35)" />
-            </LinearGradient>
-          </TouchableOpacity>
+          {/* 입주사 임직원 — KR 전용 */}
+          {lang === 'KR' && (
+            <TouchableOpacity style={styles.choiceCard} onPress={handleTenant} activeOpacity={0.85}>
+              <LinearGradient
+                colors={['#FFFFFF', '#F8FAFC']}
+                style={styles.choiceCardInner}
+              >
+                <View style={styles.choiceIconBox}>
+                  <Ionicons name="business-outline" size={30} color={MD3.primary} />
+                </View>
+                <View style={styles.choiceTextBox}>
+                  <Text style={styles.choiceTitle}>{t.tenantTitle[lang]}</Text>
+                  <Text style={styles.choiceSub}>{t.tenantSub[lang]}</Text>
+                </View>
+                <Ionicons name="chevron-forward" size={22} color="rgba(15,23,42,0.35)" />
+              </LinearGradient>
+            </TouchableOpacity>
+          )}
 
           {/* 방문객 */}
           <TouchableOpacity style={styles.choiceCard} onPress={handleVisitor} activeOpacity={0.85}>
@@ -145,7 +147,7 @@ const styles = StyleSheet.create({
     height: 160,
     right: -10,
     top: Platform.OS === 'ios' ? 80 : 60,
-    opacity: 0.12,
+    opacity: 1,
   },
 
   // ── 언어 토글 ───────────────────────────────
