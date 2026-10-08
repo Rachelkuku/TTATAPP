@@ -1,4 +1,4 @@
-import React, { useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback } from 'react';
 import {
   View,
   Text,
@@ -6,27 +6,22 @@ import {
   TouchableOpacity,
   StyleSheet,
   SafeAreaView,
-  Linking,
-  Image,
-  ImageBackground,
-  Platform,
-  StatusBar,
   Modal,
+  Alert,
 } from 'react-native';
 import qrcode from 'qrcode-generator';
 import { router } from 'expo-router';
-import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import { MD3 } from '../../constants/colors';
+import { MD3, Tokens } from '../../constants/colors';
+import { TopBar } from '../../components/common/TopBar';
 import { M3Card } from '../../components/common/M3Card';
-import { mockNotices, mockBenefits, mockCoexEvents, mockParkingInfo } from '../../utils/mockData';
+import { M3Chip } from '../../components/common/M3Chip';
+import { LockNotice } from '../../components/common/LockNotice';
+import { mockNotices, mockCoexEvents, mockParkingInfo } from '../../utils/mockData';
 import { useAuthStore } from '../../store/useAuthStore';
-import { ParkingStatus } from '../../types';
+import { NoticeCategory, ParkingStatus } from '../../types';
 
-const mascotImg = require('../../assets/cacl.png');
-const bgWtc = require('../../assets/bg_wtc.jpg');
-
-function QRView({ value, size = 220 }: { value: string; size?: number }) {
+function QRView({ value, size = 180 }: { value: string; size?: number }) {
   const matrix: boolean[][] = React.useMemo(() => {
     try {
       const qr = qrcode(0, 'M');
@@ -57,534 +52,325 @@ function QRView({ value, size = 220 }: { value: string; size?: number }) {
   );
 }
 
-const NOTICE_CAT_LABEL: Record<string, string> = {
-  operations: '운영',
-  construction: '공사',
-  urgent: '긴급',
-};
-
-const NOTICE_CAT_COLOR: Record<string, string> = {
-  operations: MD3.primary,
-  construction: MD3.secondary,
-  urgent: MD3.error,
-};
-
-const NOTICE_CAT_BG: Record<string, string> = {
-  operations: MD3.primaryContainer,
-  construction: MD3.secondaryContainer,
-  urgent: MD3.errorContainer,
+const NOTICE_TONE: Record<NoticeCategory, { fg: string; bg: string; label: string }> = {
+  urgent: { ...Tokens.red, label: '긴급' },
+  construction: { ...Tokens.orange, label: '공사' },
+  outage: { ...Tokens.skyOutage, label: '단수·정전' },
+  parking: { ...Tokens.coolParking, label: '주차혼잡' },
+  operations: { ...Tokens.slate, label: '운영' },
+  event: { ...Tokens.blue, label: '행사' },
 };
 
 const PARKING_LABEL: Record<ParkingStatus, string> = {
-  free: '여유',
-  busy: '혼잡',
-  full: '만차',
-  unknown: '정보없음',
-};
-
-const PARKING_COLOR: Record<ParkingStatus, string> = {
-  free: '#22C55E',
-  busy: '#F59E0B',
-  full: '#EF4444',
-  unknown: MD3.onSurfaceVariant,
-};
-
-const PARKING_BG: Record<ParkingStatus, string> = {
-  free: '#F0FDF4',
-  busy: '#FFFBEB',
-  full: '#FEF2F2',
-  unknown: MD3.surfaceVariant,
-};
-
-const PARKING_ICON: Record<ParkingStatus, React.ComponentProps<typeof Ionicons>['name']> = {
-  free: 'checkmark-circle',
-  busy: 'warning',
-  full: 'close-circle',
-  unknown: 'help-circle',
+  free: '여유', busy: '보통', full: '혼잡', unknown: '정보없음',
 };
 
 const QUICK_MENUS = [
-  { label: '방문자 신청', icon: 'person-add-outline' as const },
-  { label: '임시주차 신청', icon: 'car-outline' as const },
-  { label: '냉난방 신청', icon: 'thermometer-outline' as const },
-  { label: '회의실 대관', icon: 'business-outline' as const },
-  { label: '화물EV 신청', icon: 'arrow-up-circle-outline' as const },
-  { label: '비품대여', icon: 'umbrella-outline' as const },
+  { label: '공사·점검', icon: 'warning-outline' as const, onPress: () => router.push('/(tabs)/notice' as any) },
+  { label: '주차', icon: 'car-outline' as const, onPress: () => router.push('/(tabs)/service' as any) },
+  { label: '냉난방', icon: 'thermometer-outline' as const, memberOnly: true, onPress: () => router.push('/(tabs)/service' as any) },
+  { label: '할인', icon: 'pricetag-outline' as const, onPress: () => router.push('/(tabs)/benefit' as any) },
+  { label: '민원·신고', icon: 'chatbox-outline' as const, onPress: () => router.push('/(tabs)/talk' as any) },
+];
+
+const NEWS_TABS: { key: string; label: string; categories: NoticeCategory[] }[] = [
+  { key: 'construction', label: '공사·점검', categories: ['construction', 'outage', 'parking'] },
+  { key: 'event', label: '행사·혜택', categories: ['event'] },
+  { key: 'operations', label: '운영', categories: ['operations'] },
 ];
 
 export default function HomeScreen() {
-  const user = useAuthStore((s) => s.user);
+  const { isLoggedIn } = useAuthStore();
   const parking = mockParkingInfo;
-  const todayNotices = mockNotices.slice(0, 3);
-  const todayBenefits = mockBenefits.slice(0, 3);
-  const ongoingEvents = mockCoexEvents.filter((e) => e.isActive).slice(0, 3);
+  const urgentNotice = mockNotices.find((n) => n.category === 'urgent');
+  const [newsTab, setNewsTab] = useState(NEWS_TABS[0].key);
+
+  const newsList = useMemo(() => {
+    const cats = NEWS_TABS.find((t) => t.key === newsTab)?.categories ?? [];
+    return mockNotices.filter((n) => cats.includes(n.category)).slice(0, 3);
+  }, [newsTab]);
+
+  const coexEvents = mockCoexEvents.slice(0, 2);
 
   const [qrVisible, setQrVisible] = useState(false);
-  const [qrTimestamp, setQrTimestamp] = useState(() => Date.now());
-
   const openQR = useCallback(() => {
-    setQrTimestamp(Date.now());
+    if (!isLoggedIn) return;
     setQrVisible(true);
-  }, []);
+  }, [isLoggedIn]);
 
-  const qrValue = user
-    ? `WTC-GATE:${user.id}:${user.companyId}:${qrTimestamp}`
-    : `WTC-GATE:GUEST:${qrTimestamp}`;
+  const goGuest = () => router.push('/my' as any);
+
+  // 주차 비율(%) — 여유 38% 데모값
+  const parkingPercent = parking.status === 'free' ? 38 : parking.status === 'busy' ? 62 : 92;
+  const parkingBarColor = parking.status === 'free' ? '#1B6B32' : parking.status === 'busy' ? MD3.warning : MD3.error;
 
   return (
-    <View style={styles.container}>
-      <StatusBar barStyle="dark-content" />
-
-      {/* 헤더 — WTC 빌딩 실사 배경 + 마스코트 오른쪽 */}
-      <ImageBackground
-        source={bgWtc}
-        style={styles.headerBg}
-        resizeMode="cover"
-        imageStyle={{ top: -40 }}
-      >
-        <LinearGradient
-          colors={['rgba(0,10,30,0.35)', 'rgba(0,0,0,0.05)']}
-          style={StyleSheet.absoluteFill}
-        />
-        <Image source={mascotImg} style={styles.headerCharImg} resizeMode="contain" />
-        <SafeAreaView style={{ flex: 1 }}>
-          <View style={styles.topBar}>
-            <Text style={styles.appBarHeadline}>WTC ASEM·TRADE</Text>
-            <View style={styles.appBarActions}>
-              <TouchableOpacity style={styles.iconBtn} onPress={() => Linking.openURL('tel:02-6000-0114')}>
-                <Ionicons name="call-outline" size={22} color="#FFFFFF" />
-              </TouchableOpacity>
-              <TouchableOpacity style={styles.iconBtn}>
-                <Ionicons name="notifications-outline" size={22} color="#FFFFFF" />
-              </TouchableOpacity>
+    <SafeAreaView style={styles.safe}>
+      <TopBar />
+      <ScrollView showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 32 }}>
+        {/* 2열: 실시간 주차 / 입장 QR */}
+        <View style={styles.twoCol}>
+          <M3Card variant="outlined" style={styles.parkCard}>
+            <Text style={styles.parkLabel}>실시간 주차</Text>
+            <View style={styles.parkPercentRow}>
+              <Text style={styles.parkPercent}>{parkingPercent}%</Text>
+              <Text style={styles.parkPercentSub}> {PARKING_LABEL[parking.status]}</Text>
             </View>
-          </View>
-
-          <View style={styles.headerContent}>
-            <View style={styles.greetingBox}>
-              <Text style={styles.greetingTitle}>
-                {user ? `안녕하세요,\n${user.name}님!` : '안녕하세요!'}
-              </Text>
-              <Text style={styles.greetingSubtitle}>오늘도 함께 해요 😊</Text>
+            <View style={styles.parkBarTrack}>
+              <View style={[styles.parkBarFill, { width: `${parkingPercent}%`, backgroundColor: parkingBarColor }]} />
             </View>
-          </View>
-        </SafeAreaView>
-      </ImageBackground>
+            <Text style={styles.parkUpdated}>카카오T 연동 · 방금</Text>
 
-      {/* Main Content Area */}
-      <View style={styles.contentWrapper}>
-        <View style={styles.whitePanel}>
-          <View style={styles.dragHandleContainer}>
-            <View style={styles.dragHandle} />
-          </View>
-          <ScrollView style={styles.scroll} showsVerticalScrollIndicator={false} contentContainerStyle={{ paddingBottom: 40 }}>
+            <TouchableOpacity
+              style={styles.myCarBtn}
+              onPress={isLoggedIn ? () => Alert.alert('내차찾기', '기존 홈페이지 연동 예정') : goGuest}
+            >
+              <Ionicons name="search" size={14} color={MD3.onSurfaceVariant} />
+              <Text style={styles.myCarBtnText}>내차찾기</Text>
+              {!isLoggedIn && <Ionicons name="lock-closed" size={12} color={MD3.onSurfaceVariant} />}
+            </TouchableOpacity>
+            <TouchableOpacity
+              style={styles.discountBtn}
+              onPress={() => router.push('/(tabs)/service' as any)}
+            >
+              <Ionicons name="pricetag" size={14} color="#FFFFFF" />
+              <Text style={styles.discountBtnText}>할인주차권</Text>
+            </TouchableOpacity>
+          </M3Card>
 
-            {/* Quick Actions */}
-            <View style={styles.quickGridContainer}>
-              <View style={styles.quickGrid}>
-                {QUICK_MENUS.map((m) => (
-                  <TouchableOpacity
-                    key={m.label}
-                    style={styles.quickItem}
-                    onPress={() => router.push('/(tabs)/apply/index' as any)}
-                  >
-                    <LinearGradient
-                      colors={['#FFFFFF', '#E6F0FA']}
-                      style={styles.quickIcon}
-                    >
-                      <Ionicons name={m.icon} size={28} color={MD3.primary} />
-                    </LinearGradient>
-                    <Text style={styles.quickLabel}>{m.label}</Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
+          <TouchableOpacity style={styles.qrCard} activeOpacity={0.9} onPress={isLoggedIn ? openQR : goGuest}>
+            <Text style={styles.qrLabel}>입장 QR</Text>
+            <View style={styles.qrPreviewBox}>
+              {isLoggedIn ? (
+                <Ionicons name="qr-code" size={64} color="#1A3A5C" />
+              ) : (
+                <Ionicons name="lock-closed" size={28} color="rgba(255,255,255,0.5)" />
+              )}
             </View>
+            <Text style={styles.qrHint} numberOfLines={2}>
+              {isLoggedIn ? '스피드게이트에 대고 입장' : '로그인 후 사용할 수 있어요'}
+            </Text>
+          </TouchableOpacity>
+        </View>
 
-            {/* 주차현황 */}
-            <View style={styles.section}>
-              <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>주차현황</Text>
-                <Text style={styles.updatedAt}>업데이트 {parking.updatedAt.slice(11, 16)}</Text>
-              </View>
-              <M3Card variant="outlined" style={styles.parkingCard}>
-                <View style={styles.parkingInner}>
-                  <View style={styles.parkingIconBox}>
-                    <Ionicons name="car" size={28} color="#4A9EC4" />
-                  </View>
-                  <View style={{ flex: 1 }}>
-                    <Text style={styles.parkingName}>{parking.parkingName}</Text>
-                    <Text style={styles.parkingHint}>실시간 주차 현황</Text>
-                  </View>
-                  <View style={[styles.parkingBadge, { backgroundColor: PARKING_BG[parking.status] }]}>
-                    <Ionicons name={PARKING_ICON[parking.status]} size={16} color={PARKING_COLOR[parking.status]} />
-                    <Text style={[styles.parkingBadgeText, { color: PARKING_COLOR[parking.status] }]}>
-                      {PARKING_LABEL[parking.status]}
-                    </Text>
-                  </View>
-                </View>
-
-              </M3Card>
+        {/* 긴급 띠 */}
+        {urgentNotice && (
+          <TouchableOpacity
+            style={styles.urgentBanner}
+            onPress={() => router.push(`/notice/${urgentNotice.id}` as any)}
+          >
+            <View style={styles.urgentChip}>
+              <Text style={styles.urgentChipText}>긴급</Text>
             </View>
+            <Text style={styles.urgentText} numberOfLines={1}>{urgentNotice.title}</Text>
+            <Ionicons name="chevron-forward" size={18} color={Tokens.orange.fg} />
+          </TouchableOpacity>
+        )}
 
-            {/* Today's Notices */}
-            <View style={styles.section}>
-              <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>오늘의 공지</Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/apply/index' as any)}>
-                  <Text style={styles.seeAll}>전체보기</Text>
-                </TouchableOpacity>
-              </View>
-              <M3Card variant="outlined" style={styles.listCard}>
-                {todayNotices.map((notice, idx) => (
-                  <TouchableOpacity
-                    key={notice.id}
-                    style={[styles.listRow, idx < todayNotices.length - 1 && styles.listDivider]}
-                    onPress={() => router.push(`/notice/${notice.id}` as any)}
-                  >
-                    <View style={[styles.noticeCatBadge, { backgroundColor: NOTICE_CAT_BG[notice.category] }]}>
-                      <Text style={[styles.noticeCatText, { color: NOTICE_CAT_COLOR[notice.category] }]}>
-                        {NOTICE_CAT_LABEL[notice.category]}
-                      </Text>
-                    </View>
-                    <Text style={styles.listItemTitle} numberOfLines={1}>{notice.title}</Text>
-                    {notice.isUrgent && <Ionicons name="alert-circle" size={16} color={MD3.error} />}
-                    <Ionicons name="chevron-forward" size={16} color={MD3.onSurfaceVariant} />
-                  </TouchableOpacity>
-                ))}
-              </M3Card>
-            </View>
-
-            {/* Today's Benefits */}
-            <View style={styles.section}>
-              <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>오늘의 혜택</Text>
-                <TouchableOpacity onPress={() => router.push('/(tabs)/membership/index' as any)}>
-                  <Text style={styles.seeAll}>전체보기</Text>
-                </TouchableOpacity>
-              </View>
-              <View style={{ flexDirection: 'row', gap: 12, paddingHorizontal: 16 }}>
-                {todayBenefits.map((b) => (
-                  <M3Card key={b.id} variant="elevated" style={styles.benefitCard} onPress={() => {}}>
-                    <View style={styles.benefitImgBox}>
-                      <Ionicons name="gift" size={32} color={MD3.primary} />
-                    </View>
-                    <View style={styles.benefitContent}>
-                      <Text style={styles.benefitBrand}>{b.brandName}</Text>
-                      <Text style={styles.benefitTitle} numberOfLines={2}>{b.title}</Text>
-                      <View style={styles.discountChip}>
-                        <Text style={styles.discountChipText}>{b.discountText}</Text>
-                      </View>
-                    </View>
-                  </M3Card>
-                ))}
-              </View>
-            </View>
-
-            {/* Coex Events */}
-            <View style={[styles.section, { paddingHorizontal: 16 }]}>
-              <View style={styles.sectionRow}>
-                <Text style={styles.sectionTitle}>코엑스 전시 일정</Text>
-                <TouchableOpacity><Text style={styles.seeAll}>전체보기</Text></TouchableOpacity>
-              </View>
-              <M3Card variant="outlined" style={styles.listCard}>
-                {ongoingEvents.map((ev, idx) => (
-                  <TouchableOpacity
-                    key={ev.id}
-                    style={[styles.listRow, idx < ongoingEvents.length - 1 && styles.listDivider]}
-                    onPress={() => router.push(`/coex/${ev.id}` as any)}
-                  >
-                    <View style={styles.eventDateBox}>
-                      <Text style={styles.eventDateText}>{ev.startDate.slice(5).replace('-', '/')}</Text>
-                      <Text style={styles.eventDateSep}>~</Text>
-                      <Text style={styles.eventDateText}>{ev.endDate.slice(5).replace('-', '/')}</Text>
-                    </View>
-                    <View style={{ flex: 1 }}>
-                      <Text style={styles.listItemTitle} numberOfLines={1}>{ev.title}</Text>
-                      <Text style={styles.eventLocation}>{ev.location}</Text>
-                    </View>
-                    {ev.hasTenantDiscount && (
-                      <View style={styles.tenantChip}>
-                        <Text style={styles.tenantChipText}>할인</Text>
+        {/* 자주 찾는 메뉴 */}
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>자주 찾는 메뉴</Text>
+          <View style={styles.quickRow}>
+            {QUICK_MENUS.map((m) => {
+              const locked = m.memberOnly && !isLoggedIn;
+              return (
+                <TouchableOpacity
+                  key={m.label}
+                  style={styles.quickItem}
+                  onPress={locked ? goGuest : m.onPress}
+                >
+                  <View style={styles.quickIcon}>
+                    <Ionicons name={m.icon} size={24} color={MD3.primary} />
+                    {locked && (
+                      <View style={styles.quickLockDot}>
+                        <Ionicons name="lock-closed" size={9} color={MD3.onSurfaceVariant} />
                       </View>
                     )}
-                    <Ionicons name="chevron-forward" size={16} color={MD3.onSurfaceVariant} />
-                  </TouchableOpacity>
-                ))}
-              </M3Card>
-            </View>
-
-            {/* Customer Service Banner */}
-            <View style={styles.csBanner}>
-              <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('tel:02-6000-0114')}>
-                <View style={styles.csBannerIcon}>
-                  <Ionicons name="headset" size={22} color="#FFFFFF" />
-                </View>
-                <View>
-                  <Text style={styles.csBannerTitle}>고객센터</Text>
-                  <Text style={styles.csBannerPhone}>02-6000-0114</Text>
-                </View>
-              </TouchableOpacity>
-              <View style={styles.csBannerDivider} />
-              <TouchableOpacity style={styles.csHalf} onPress={() => Linking.openURL('https://pf.kakao.com/_xjxocaT')}>
-                <View style={styles.kakaoIconBox}>
-                  <Ionicons name="chatbubble-ellipses" size={22} color="#3C1E1E" />
-                </View>
-                <View>
-                  <Text style={styles.csBannerTitle}>카카오톡 상담</Text>
-                  <Text style={styles.kakaoText}>고객센터 바로가기</Text>
-                </View>
-              </TouchableOpacity>
-            </View>
-
-            {/* 스피드게이트 출입 QR 버튼 */}
-            <TouchableOpacity style={styles.qrBtn} onPress={openQR} activeOpacity={0.85}>
-              <LinearGradient colors={['#1A3A5C', '#2A5CA8']} style={styles.qrBtnGradient}>
-                <View style={styles.qrBtnLeft}>
-                  <View style={styles.qrBtnIconBox}>
-                    <Ionicons name="qr-code-outline" size={28} color="#FFFFFF" />
                   </View>
-                  <View>
-                    <Text style={styles.qrBtnTitle}>스피드게이트 출입 QR</Text>
-                    <Text style={styles.qrBtnSub}>탭하여 QR 코드 열기</Text>
-                  </View>
-                </View>
-                <Ionicons name="chevron-forward" size={20} color="rgba(255,255,255,0.6)" />
-              </LinearGradient>
+                  <Text style={styles.quickLabel}>{m.label}</Text>
+                </TouchableOpacity>
+              );
+            })}
+          </View>
+        </View>
+
+        {/* 이번 주 소식 */}
+        <View style={styles.section}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitle}>이번 주 소식</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/notice' as any)}>
+              <Text style={styles.seeAll}>전체보기</Text>
             </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={styles.chipRow}>
+            {NEWS_TABS.map((t) => (
+              <M3Chip key={t.key} label={t.label} selected={newsTab === t.key} onPress={() => setNewsTab(t.key)} />
+            ))}
+          </ScrollView>
 
+          {isLoggedIn ? (
+            <M3Card variant="outlined" style={{ overflow: 'hidden', marginTop: 10 }}>
+              {newsList.map((n, idx) => {
+                const tone = NOTICE_TONE[n.category];
+                return (
+                  <TouchableOpacity
+                    key={n.id}
+                    style={[styles.newsRow, idx < newsList.length - 1 && styles.rowDivider]}
+                    onPress={() => router.push(`/notice/${n.id}` as any)}
+                  >
+                    <View style={[styles.tagBadge, { backgroundColor: tone.bg }]}>
+                      <Text style={[styles.tagText, { color: tone.fg }]}>{tone.label}</Text>
+                    </View>
+                    <Text style={styles.newsTitle} numberOfLines={1}>{n.title}</Text>
+                    <Text style={styles.newsDate}>{n.createdAt.slice(5)}</Text>
+                  </TouchableOpacity>
+                );
+              })}
+            </M3Card>
+          ) : (
+            <View style={{ marginTop: 10 }}>
+              <LockNotice message="입주사 임직원 인증 후 공지를 볼 수 있어요" />
+            </View>
+          )}
+        </View>
+
+        {/* 오늘 코엑스 전시 — 시각 비중 축소 */}
+        <View style={[styles.section, { paddingHorizontal: 16 }]}>
+          <View style={styles.sectionRow}>
+            <Text style={styles.sectionTitleSmall}>오늘 코엑스 전시</Text>
+            <TouchableOpacity onPress={() => router.push('/(tabs)/benefit' as any)}>
+              <Text style={styles.seeAll}>혜택 보기</Text>
+            </TouchableOpacity>
+          </View>
+          <ScrollView horizontal showsHorizontalScrollIndicator={false}>
+            {coexEvents.map((ev) => (
+              <TouchableOpacity
+                key={ev.id}
+                style={styles.coexCard}
+                onPress={() => router.push(`/coex/${ev.id}` as any)}
+              >
+                <Text style={styles.coexBadge}>{ev.isActive ? '진행 중' : '예정'}</Text>
+                <Text style={styles.coexTitle} numberOfLines={1}>{ev.title}</Text>
+                <Text style={styles.coexSub}>{ev.location} · {ev.startDate.slice(5)}~{ev.endDate.slice(5)}</Text>
+              </TouchableOpacity>
+            ))}
           </ScrollView>
         </View>
-      </View>
+      </ScrollView>
 
-      {/* QR 모달 */}
+      {/* QR 모달 (회원) */}
       <Modal visible={qrVisible} transparent animationType="fade" onRequestClose={() => setQrVisible(false)}>
         <View style={styles.qrOverlay}>
           <View style={styles.qrSheet}>
-            {/* 헤더 */}
             <View style={styles.qrSheetHeader}>
               <Text style={styles.qrSheetTitle}>스피드게이트 출입 QR</Text>
               <TouchableOpacity onPress={() => setQrVisible(false)} style={styles.qrCloseBtn}>
                 <Ionicons name="close" size={22} color={MD3.onSurface} />
               </TouchableOpacity>
             </View>
-
-            {/* QR 코드 */}
             <View style={styles.qrCodeBox}>
-              <QRView value={qrValue} size={220} />
+              <QRView value={`WTC-GATE:${Date.now()}`} size={200} />
             </View>
-
-            {/* 유저 정보 */}
-            <Text style={styles.qrUserName}>{user ? user.name : '게스트'}</Text>
-            <Text style={styles.qrCompanyName}>{user ? user.companyName : 'WTC SEOUL'}</Text>
-
-            <View style={styles.qrDivider} />
-
-            {/* 새로고침 */}
-            <TouchableOpacity style={styles.qrRefreshBtn} onPress={() => setQrTimestamp(Date.now())}>
-              <Ionicons name="refresh" size={16} color={MD3.primary} />
-              <Text style={styles.qrRefreshText}>QR 새로고침</Text>
-            </TouchableOpacity>
-
             <Text style={styles.qrNotice}>본 QR은 스피드게이트 출입 전용입니다</Text>
           </View>
         </View>
       </Modal>
-    </View>
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#0A1E3C' },
-  headerBg: {
-    height: Platform.OS === 'ios' ? 260 : 240,
-    width: '100%',
-  },
-  topBar: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    paddingHorizontal: 20,
-    paddingTop: Platform.OS === 'android' ? 16 : 0,
-    height: 56,
-  },
-  appBarHeadline: { fontSize: 18, fontWeight: '800', color: '#FFFFFF', letterSpacing: 0.3 },
-  appBarActions: { flexDirection: 'row', gap: 8 },
-  iconBtn: {
-    width: 38, height: 38, borderRadius: 19,
-    backgroundColor: 'rgba(0,0,0,0.1)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  headerContent: {
-    flex: 1,
-    flexDirection: 'row',
-    alignItems: 'flex-end',
-    paddingLeft: 24,
-  },
-  greetingBox: { flex: 1, paddingBottom: 16 },
-  greetingTitle: { fontSize: 22, fontWeight: '700', color: '#FFFFFF', lineHeight: 30 },
-  greetingSubtitle: { fontSize: 14, color: 'rgba(255,255,255,0.85)', marginTop: 4 },
-  headerCharImg: { width: 225, height: 179, position: 'absolute', right: 0, bottom: -14 },
+  safe: { flex: 1, backgroundColor: Tokens.bg },
 
-  contentWrapper: { flex: 1, marginTop: -65 },
-  whitePanel: {
-    flex: 1, backgroundColor: '#FFFFFF',
-    borderTopLeftRadius: 32, borderTopRightRadius: 32,
-    overflow: 'hidden',
-  },
-  dragHandleContainer: {
-    alignItems: 'center',
-    paddingVertical: 12,
-  },
-  dragHandle: {
-    width: 40,
-    height: 4,
-    borderRadius: 2,
-    backgroundColor: '#E0E0E0',
-  },
-  scroll: { flex: 1 },
-
-  quickGridContainer: { paddingHorizontal: 16, marginBottom: 32 },
-  quickGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, justifyContent: 'space-between' },
-  quickItem: { width: '30%', alignItems: 'center', marginBottom: 12 },
-  quickIcon: {
-    width: 64, height: 64, borderRadius: 24,
-    alignItems: 'center', justifyContent: 'center', marginBottom: 8,
-    borderWidth: 1, borderColor: '#F0F8FF',
-    shadowColor: '#4A9EC4', shadowOffset: { width: 0, height: 4 }, shadowOpacity: 0.15, shadowRadius: 8, elevation: 4,
-  },
-  quickLabel: { fontSize: 13, color: MD3.onSurface, textAlign: 'center', fontWeight: '500' },
-
-  section: { marginBottom: 32 },
-  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16, paddingHorizontal: 16 },
-  sectionTitle: { fontSize: 18, fontWeight: '700', color: MD3.onSurface },
-  seeAll: { fontSize: 14, color: '#888', fontWeight: '500' },
-
-  listCard: { overflow: 'hidden' },
-  listRow: { flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 10 },
-  listDivider: { borderBottomWidth: 1, borderBottomColor: MD3.outlineVariant },
-  listItemTitle: { flex: 1, fontSize: 15, fontWeight: '500', color: MD3.onSurface },
-  noticeCatBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
-  noticeCatText: { fontSize: 12, fontWeight: '700' },
-
-  benefitCard: { flex: 1 },
-  benefitImgBox: { height: 90, backgroundColor: '#F5F8FF', alignItems: 'center', justifyContent: 'center' },
-  benefitContent: { padding: 12 },
-  benefitBrand: { fontSize: 11, color: '#888', marginBottom: 4 },
-  benefitTitle: { fontSize: 14, fontWeight: '600', color: MD3.onSurface, marginBottom: 8, lineHeight: 18 },
-  discountChip: {
-    alignSelf: 'flex-start', backgroundColor: '#E4ECFB',
-    borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4,
-  },
-  discountChipText: { fontSize: 12, fontWeight: '700', color: MD3.primary },
-
-  eventDateBox: {
-    backgroundColor: '#F5F8FF', borderRadius: 8, padding: 8,
-    alignItems: 'center', minWidth: 56,
-  },
-  eventDateText: { fontSize: 12, fontWeight: '700', color: MD3.onSurfaceVariant },
-  eventDateSep: { fontSize: 10, color: '#888', marginVertical: 2 },
-  eventLocation: { fontSize: 12, color: '#888', marginTop: 4 },
-  tenantChip: { backgroundColor: '#FFF0F0', borderRadius: 6, paddingHorizontal: 8, paddingVertical: 4 },
-  tenantChipText: { fontSize: 12, fontWeight: '700', color: MD3.error },
-
-  csBanner: {
-    flexDirection: 'row', alignItems: 'center',
-    backgroundColor: '#F9FAFB', borderRadius: 16,
-    marginHorizontal: 16,
-    borderWidth: 1, borderColor: '#EEEEEE',
-    overflow: 'hidden',
-  },
-  csHalf: {
-    flex: 1, flexDirection: 'row', alignItems: 'center',
-    padding: 14, gap: 10,
-  },
-  csBannerDivider: {
-    width: 1, height: 52, backgroundColor: '#E0E0E0',
-  },
-  csBannerIcon: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: MD3.primary, alignItems: 'center', justifyContent: 'center',
-  },
-  kakaoIconBox: {
-    width: 44, height: 44, borderRadius: 22,
-    backgroundColor: '#FEE500', alignItems: 'center', justifyContent: 'center',
-  },
-  csBannerTitle: { fontSize: 11, fontWeight: '600', color: MD3.onSurfaceVariant, marginBottom: 3 },
-  csBannerPhone: { fontSize: 15, fontWeight: '700', color: MD3.primary },
-  kakaoText: { fontSize: 13, fontWeight: '700', color: '#3C1E1E' },
-
-  updatedAt: { fontSize: 12, color: '#AAA' },
-  parkingCard: { marginHorizontal: 16, overflow: 'hidden' },
-  parkingInner: { flexDirection: 'row', alignItems: 'center', padding: 16, gap: 12 },
-  parkingIconBox: {
-    width: 52, height: 52, borderRadius: 16,
-    backgroundColor: '#EBF7FF',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  parkingName: { fontSize: 15, fontWeight: '700', color: MD3.onSurface },
-  parkingHint: { fontSize: 12, color: '#888', marginTop: 2 },
-  parkingBadge: {
-    flexDirection: 'row', alignItems: 'center', gap: 4,
-    paddingHorizontal: 12, paddingVertical: 6, borderRadius: 20,
-  },
-  parkingBadgeText: { fontSize: 14, fontWeight: '700' },
-
-  qrBtn: {
-    marginHorizontal: 16, marginTop: 12, marginBottom: 8,
-    borderRadius: 16, overflow: 'hidden',
-    shadowColor: '#1A3A5C', shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25, shadowRadius: 8, elevation: 6,
-  },
-  qrBtnGradient: {
-    flexDirection: 'row', alignItems: 'center',
-    paddingHorizontal: 20, paddingVertical: 18, justifyContent: 'space-between',
-  },
-  qrBtnLeft: { flexDirection: 'row', alignItems: 'center', gap: 16 },
-  qrBtnIconBox: {
-    width: 48, height: 48, borderRadius: 14,
-    backgroundColor: 'rgba(255,255,255,0.15)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  qrBtnTitle: { fontSize: 16, fontWeight: '700', color: '#FFFFFF', marginBottom: 4 },
-  qrBtnSub: { fontSize: 12, color: 'rgba(255,255,255,0.7)' },
-
-  qrOverlay: {
-    flex: 1, backgroundColor: 'rgba(0,0,0,0.6)',
-    alignItems: 'center', justifyContent: 'center',
-  },
-  qrSheet: {
-    backgroundColor: '#FFFFFF', borderRadius: 28,
-    paddingHorizontal: 28, paddingBottom: 28, paddingTop: 20,
-    width: 320, alignItems: 'center',
-    shadowColor: '#000', shadowOffset: { width: 0, height: 8 },
-    shadowOpacity: 0.3, shadowRadius: 20, elevation: 20,
-  },
-  qrSheetHeader: {
-    flexDirection: 'row', alignItems: 'center',
-    justifyContent: 'space-between', width: '100%', marginBottom: 20,
-  },
-  qrSheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A3A5C' },
-  qrCloseBtn: {
-    width: 32, height: 32, borderRadius: 16,
-    backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center',
-  },
-  qrCodeBox: {
-    padding: 16, borderRadius: 20,
-    backgroundColor: '#FFFFFF',
-    borderWidth: 1.5, borderColor: '#E8EEF8',
-    marginBottom: 20,
-    shadowColor: '#1A3A5C', shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.08, shadowRadius: 8, elevation: 3,
-  },
-  qrUserName: { fontSize: 18, fontWeight: '700', color: MD3.onSurface, marginBottom: 4 },
-  qrCompanyName: { fontSize: 13, color: MD3.onSurfaceVariant },
-  qrDivider: { width: '100%', height: 1, backgroundColor: '#EEEEEE', marginVertical: 16 },
-  qrRefreshBtn: {
+  twoCol: { flexDirection: 'row', gap: 12, paddingHorizontal: 16, marginTop: 4 },
+  parkCard: { flex: 1, padding: 16, gap: 10 },
+  parkLabel: { fontSize: 13, color: Tokens.textSub, fontWeight: '500' },
+  parkPercentRow: { flexDirection: 'row', alignItems: 'flex-end' },
+  parkPercent: { fontSize: 28, fontWeight: '800', color: Tokens.text },
+  parkPercentSub: { fontSize: 12, color: Tokens.textSub, marginBottom: 4 },
+  parkBarTrack: { height: 6, borderRadius: 3, backgroundColor: MD3.surfaceVariant, overflow: 'hidden' },
+  parkBarFill: { height: 6, borderRadius: 3 },
+  parkUpdated: { fontSize: 11, color: Tokens.textSub },
+  myCarBtn: {
     flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 16, paddingVertical: 8,
-    borderRadius: 20, borderWidth: 1, borderColor: MD3.primary, marginBottom: 12,
+    backgroundColor: MD3.surfaceVariant, borderRadius: 12,
+    minHeight: Tokens.minTouch, paddingHorizontal: 12, justifyContent: 'center',
   },
-  qrRefreshText: { fontSize: 13, fontWeight: '600', color: MD3.primary },
-  qrNotice: { fontSize: 11, color: '#AAA', textAlign: 'center' },
+  myCarBtnText: { fontSize: 13, fontWeight: '600', color: MD3.onSurfaceVariant },
+  discountBtn: {
+    flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6,
+    backgroundColor: MD3.primary, borderRadius: 12,
+    minHeight: Tokens.minTouch,
+  },
+  discountBtnText: { fontSize: 13, fontWeight: '700', color: '#FFFFFF' },
 
+  qrCard: {
+    flex: 1, backgroundColor: MD3.inverseSurface, borderRadius: Tokens.cardRadius,
+    padding: 16, alignItems: 'center', justifyContent: 'space-between',
+  },
+  qrLabel: { fontSize: 13, color: 'rgba(255,255,255,0.8)', fontWeight: '500', alignSelf: 'flex-start' },
+  qrPreviewBox: {
+    width: 92, height: 92, borderRadius: 14, backgroundColor: '#FFFFFF',
+    alignItems: 'center', justifyContent: 'center', marginVertical: 8,
+  },
+  qrHint: { fontSize: 11, color: 'rgba(255,255,255,0.7)', textAlign: 'center' },
+
+  urgentBanner: {
+    flexDirection: 'row', alignItems: 'center', gap: 10,
+    backgroundColor: Tokens.orange.bg, borderRadius: 14,
+    marginHorizontal: 16, marginTop: 14, paddingHorizontal: 14,
+    minHeight: Tokens.minTouch,
+  },
+  urgentChip: { backgroundColor: Tokens.orange.fg, borderRadius: 8, paddingHorizontal: 8, paddingVertical: 4 },
+  urgentChipText: { fontSize: 11, fontWeight: '700', color: '#FFFFFF' },
+  urgentText: { flex: 1, fontSize: 13, fontWeight: '600', color: Tokens.orange.fg },
+
+  section: { marginTop: 24, paddingHorizontal: 16 },
+  sectionRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 },
+  sectionTitle: { fontSize: 17, fontWeight: '700', color: Tokens.text, marginBottom: 12 },
+  sectionTitleSmall: { fontSize: 14, fontWeight: '700', color: Tokens.textSub },
+  seeAll: { fontSize: 13, color: Tokens.textSub, fontWeight: '500' },
+
+  quickRow: { flexDirection: 'row', justifyContent: 'space-between' },
+  quickItem: { alignItems: 'center', width: '19%' },
+  quickIcon: {
+    width: 52, height: 52, borderRadius: 18, backgroundColor: MD3.primaryContainer,
+    alignItems: 'center', justifyContent: 'center', marginBottom: 6,
+  },
+  quickLockDot: {
+    position: 'absolute', right: -2, bottom: -2,
+    width: 16, height: 16, borderRadius: 8, backgroundColor: MD3.surface,
+    alignItems: 'center', justifyContent: 'center',
+  },
+  quickLabel: { fontSize: 11, color: Tokens.text, textAlign: 'center' },
+
+  chipRow: { gap: 8, paddingVertical: 2 },
+  newsRow: { flexDirection: 'row', alignItems: 'center', gap: 10, padding: 14, minHeight: Tokens.minTouch },
+  rowDivider: { borderTopWidth: 1, borderTopColor: Tokens.divider },
+  tagBadge: { paddingHorizontal: 8, paddingVertical: 4, borderRadius: 6 },
+  tagText: { fontSize: 11, fontWeight: '700' },
+  newsTitle: { flex: 1, fontSize: 14, fontWeight: '500', color: Tokens.text },
+  newsDate: { fontSize: 12, color: Tokens.textSub },
+
+  coexCard: {
+    width: 160, marginRight: 10, backgroundColor: Tokens.card,
+    borderRadius: 14, padding: 12, borderWidth: 1, borderColor: Tokens.divider,
+  },
+  coexBadge: { fontSize: 10, fontWeight: '700', color: MD3.primary, marginBottom: 4 },
+  coexTitle: { fontSize: 13, fontWeight: '600', color: Tokens.text, marginBottom: 2 },
+  coexSub: { fontSize: 11, color: Tokens.textSub },
+
+  qrOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.6)', alignItems: 'center', justifyContent: 'center' },
+  qrSheet: {
+    backgroundColor: '#FFFFFF', borderRadius: 28, paddingHorizontal: 28, paddingBottom: 28, paddingTop: 20,
+    width: 320, alignItems: 'center',
+  },
+  qrSheetHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', width: '100%', marginBottom: 20 },
+  qrSheetTitle: { fontSize: 17, fontWeight: '700', color: '#1A3A5C' },
+  qrCloseBtn: { width: 32, height: 32, borderRadius: 16, backgroundColor: '#F5F5F5', alignItems: 'center', justifyContent: 'center' },
+  qrCodeBox: {
+    padding: 16, borderRadius: 20, backgroundColor: '#FFFFFF',
+    borderWidth: 1.5, borderColor: '#E8EEF8', marginBottom: 12,
+  },
+  qrNotice: { fontSize: 11, color: '#AAA', textAlign: 'center' },
 });

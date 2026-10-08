@@ -15,6 +15,7 @@ export default function RootLayout() {
           <Stack.Screen name="gateway" />
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="my" />
           <Stack.Screen name="(visitor)" />
           <Stack.Screen name="webview" />
           <Stack.Screen name="notice/[id]" options={{ headerShown: true, title: '공지사항', headerBackTitle: '' }} />

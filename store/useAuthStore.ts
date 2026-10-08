@@ -36,7 +36,28 @@ export const useAuthStore = create<AuthState>((set) => ({
       ]);
       const userType = (storedUserType as UserType) ?? null;
       const lang = (storedLang as Lang) ?? 'KR';
-      set({ userType, lang, hydrated: true });
+
+      if (userType === 'tenant') {
+        // 데모 환경: 저장된 토큰 대신 mock 사용자로 로그인 상태 복원
+        set({
+          userType,
+          lang,
+          hydrated: true,
+          isLoggedIn: true,
+          user: {
+            id: '1',
+            name: '홍길동',
+            email: 'demo@wtc.co.kr',
+            phone: '010-1234-5678',
+            companyId: 'comp1',
+            companyName: '(주)스타트업코리아',
+            role: 'employee',
+            isTenantVerified: true,
+          },
+        });
+      } else {
+        set({ userType, lang, hydrated: true });
+      }
     } catch {
       set({ hydrated: true });
     }

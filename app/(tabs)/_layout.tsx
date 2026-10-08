@@ -71,34 +71,34 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="apply/index"
+        name="notice/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="document-text" outlineName="document-text-outline" label="신청·공지" focused={focused} />
+            <NavItem name="warning" outlineName="warning-outline" label="공사·점검" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="membership/index"
+        name="service/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="gift" outlineName="gift-outline" label="멤버십" focused={focused} />
+            <NavItem name="grid" outlineName="grid-outline" label="서비스" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="community/index"
+        name="benefit/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="people" outlineName="people-outline" label="커뮤니티" focused={focused} />
+            <NavItem name="pricetag" outlineName="pricetag-outline" label="혜택" focused={focused} />
           ),
         }}
       />
       <Tabs.Screen
-        name="my/index"
+        name="talk/index"
         options={{
           tabBarIcon: ({ focused }) => (
-            <NavItem name="person" outlineName="person-outline" label="마이" focused={focused} />
+            <NavItem name="chatbubble" outlineName="chatbubble-outline" label="소통" focused={focused} />
           ),
         }}
       />
